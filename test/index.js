@@ -32,7 +32,8 @@ test('travisDiff()', function (t) {
   var stepThree = 'Lorem.\n' + stepOne + '\nLorem.';
   var other = 'Lorem ipsum.';
   var initial;
-  var final;
+
+  delete process.env.TRAVIS_COMMIT_RANGE;
 
   t.plan(7);
 
@@ -61,6 +62,15 @@ test('travisDiff()', function (t) {
 
         fs.writeFile(file.path, file.contents, next);
       });
+    })
+    .use(function () {
+      return execa('git', ['config', '--global', 'user.email'])
+        .catch(function () {
+          return execa('git', ['config', '--global', 'user.email', 'info@example.com'])
+            .then(function () {
+              return execa('git', ['config', '--global', 'user.name', 'Ex Ample']);
+            });
+        });
     })
     .use(function () {
       return execa('git', ['add', 'example.txt']);
@@ -143,9 +153,7 @@ test('travisDiff()', function (t) {
     .use(function (result, next) {
       var file = vfile({path: 'example.txt', contents: stepTwo});
 
-      final = result.stdout;
-
-      process.env.TRAVIS_COMMIT_RANGE = [initial, final].join('...');
+      process.env.TRAVIS_COMMIT_RANGE = [initial, result.stdout].join('...');
 
       processor.process(file, function (err) {
         t.deepEqual(
