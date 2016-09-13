@@ -26,18 +26,17 @@ function diff() {
 
   function transform(tree, file, next) {
     var base = file.dirname;
-    var range = process.env.TRAVIS_COMMIT_RANGE;
+    var commitRange = process.env.TRAVIS_COMMIT_RANGE;
+    var range = (commitRange || '').split(/\.{3}/);
 
-    if (!base || !range) {
+    if (!base || !commitRange || range.length !== 2) {
       return next();
     }
 
-    if (range !== previousRange) {
+    if (commitRange !== previousRange) {
       cache = {};
-      previousRange = range;
+      previousRange = commitRange;
     }
-
-    range = range.split(/\.{3}/);
 
     if (has(cache, base)) {
       tick(cache[base]);
