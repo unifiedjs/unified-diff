@@ -1,14 +1,5 @@
-/**
- * @author Titus Wormer
- * @copyright 2016 Titus Wormer
- * @license MIT
- * @module unified-diff
- * @fileoverview Test suite for `unified-diff`.
- */
-
 'use strict';
 
-/* Dependencies. */
 var retext = require('retext');
 var visit = require('unist-util-visit');
 var toString = require('nlcst-to-string');

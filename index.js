@@ -1,20 +1,10 @@
-/**
- * @author Titus Wormer
- * @copyright 2016 Titus Wormer
- * @license MIT
- * @module unified:diff
- * @fileoverview Ignore unrelated messages.
- */
-
 'use strict';
 
-/* Dependencies. */
 var path = require('path');
 var gitDiffTree = require('git-diff-tree');
 var findUp = require('vfile-find-up');
 var has = require('has');
 
-/* Expose. */
 module.exports = diff;
 
 var previousRange;
@@ -90,7 +80,7 @@ function diff() {
         var ranges = patches[fp];
 
         /* Unchanged file. */
-        if (!ranges || !ranges.length) {
+        if (!ranges || ranges.length === 0) {
           file.messages = [];
           return next();
         }

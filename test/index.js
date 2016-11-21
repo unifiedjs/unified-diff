@@ -1,14 +1,5 @@
-/**
- * @author Titus Wormer
- * @copyright 2016 Titus Wormer
- * @license MIT
- * @module unified-diff
- * @fileoverview Test suite for `unified-diff`.
- */
-
 'use strict';
 
-/* Dependencies. */
 var fs = require('fs');
 var path = require('path');
 var trough = require('trough');
@@ -18,7 +9,6 @@ var rimraf = require('rimraf');
 var vfile = require('to-vfile');
 var processor = require('./processor')();
 
-/* Tests. */
 test('travisDiff()', function (t) {
   var current = process.cwd();
   var range = process.env.TRAVIS_COMMIT_RANGE;
