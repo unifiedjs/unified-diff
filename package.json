@@ -26,10 +26,10 @@
     "vfile-find-up": "^2.0.0"
   },
   "devDependencies": {
-    "execa": "^0.4.0",
+    "execa": "^0.5.0",
     "has": "^1.0.1",
     "nlcst-to-string": "^2.0.0",
-    "nyc": "^8.1.0",
+    "nyc": "^9.0.1",
     "remark-cli": "^2.0.0",
     "remark-preset-wooorm": "^1.0.0",
     "retext": "^4.0.0",
@@ -38,7 +38,7 @@
     "to-vfile": "^2.0.0",
     "trough": "^1.0.0",
     "unist-util-visit": "^1.1.0",
-    "xo": "^0.16.0"
+    "xo": "^0.17.1"
   },
   "scripts": {
     "build-md": "remark . --quiet --frail",
