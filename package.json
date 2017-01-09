@@ -26,7 +26,7 @@
     "vfile-find-up": "^2.0.0"
   },
   "devDependencies": {
-    "execa": "^0.5.0",
+    "execa": "^0.6.0",
     "has": "^1.0.1",
     "nlcst-to-string": "^2.0.0",
     "nyc": "^9.0.1",
