@@ -29,7 +29,7 @@
     "execa": "^0.6.0",
     "has": "^1.0.1",
     "nlcst-to-string": "^2.0.0",
-    "nyc": "^9.0.1",
+    "nyc": "^10.1.2",
     "remark-cli": "^2.0.0",
     "remark-preset-wooorm": "^1.0.0",
     "retext": "^4.0.0",
