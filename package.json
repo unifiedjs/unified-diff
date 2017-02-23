@@ -32,7 +32,7 @@
     "nyc": "^10.1.0",
     "remark-cli": "^2.0.0",
     "remark-preset-wooorm": "^1.0.0",
-    "retext": "^4.0.0",
+    "retext": "^5.0.0",
     "rimraf": "^2.5.4",
     "tape": "^4.0.0",
     "to-vfile": "^2.0.0",
