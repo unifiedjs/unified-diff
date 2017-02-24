@@ -30,9 +30,9 @@
     "has": "^1.0.1",
     "nlcst-to-string": "^2.0.0",
     "nyc": "^10.1.0",
-    "remark-cli": "^2.0.0",
-    "remark-preset-wooorm": "^1.0.0",
-    "retext": "^4.0.0",
+    "remark-cli": "^3.0.0",
+    "remark-preset-wooorm": "^2.0.0",
+    "retext": "^5.0.0",
     "rimraf": "^2.5.4",
     "tape": "^4.0.0",
     "to-vfile": "^2.0.0",
@@ -41,7 +41,7 @@
     "xo": "^0.17.1"
   },
   "scripts": {
-    "build-md": "remark . --quiet --frail",
+    "build-md": "remark . -qfo",
     "build": "npm run build-md",
     "lint": "xo",
     "test-api": "node test",
@@ -58,7 +58,6 @@
     "space": true
   },
   "remarkConfig": {
-    "output": true,
-    "presets": "wooorm"
+    "plugins": ["preset-wooorm"]
   }
 }

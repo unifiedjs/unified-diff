@@ -8,7 +8,7 @@ var diff = require('..');
 module.exports = retext()
   .use(lorem)
   .use(diff)
-  .abstract();
+  .freeze();
 
 function lorem() {
   return transformer;
