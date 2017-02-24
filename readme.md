@@ -136,13 +136,13 @@ variable this plugin runs, otherwise it’s a noop.
 
 <!-- Definitions -->
 
-[travis-badge]: https://img.shields.io/travis/wooorm/unified-diff.svg
+[travis-badge]: https://img.shields.io/travis/unifiedjs/unified-diff.svg
 
-[travis]: https://travis-ci.org/wooorm/unified-diff
+[travis]: https://travis-ci.org/unifiedjs/unified-diff
 
-[codecov-badge]: https://img.shields.io/codecov/c/github/wooorm/unified-diff.svg
+[codecov-badge]: https://img.shields.io/codecov/c/github/unifiedjs/unified-diff.svg
 
-[codecov]: https://codecov.io/github/wooorm/unified-diff
+[codecov]: https://codecov.io/github/unifiedjs/unified-diff
 
 [npm-install]: https://docs.npmjs.com/cli/install
 
@@ -150,7 +150,7 @@ variable this plugin runs, otherwise it’s a noop.
 
 [author]: http://wooorm.com
 
-[unified]: https://github.com/wooorm/unified
+[unified]: https://github.com/unifiedjs/unified
 
 [alex]: https://github.com/wooorm/alex
 
