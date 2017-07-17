@@ -22,12 +22,10 @@
   ],
   "dependencies": {
     "git-diff-tree": "^1.0.0",
-    "has": "^1.0.1",
     "vfile-find-up": "^2.0.0"
   },
   "devDependencies": {
     "execa": "^0.7.0",
-    "has": "^1.0.1",
     "nlcst-to-string": "^2.0.0",
     "nyc": "^11.1.0",
     "remark-cli": "^3.0.0",

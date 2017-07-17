@@ -3,9 +3,10 @@
 var path = require('path');
 var gitDiffTree = require('git-diff-tree');
 var findUp = require('vfile-find-up');
-var has = require('has');
 
 module.exports = diff;
+
+var own = {}.hasOwnProperty;
 
 var previousRange;
 
@@ -28,7 +29,7 @@ function diff() {
       previousRange = commitRange;
     }
 
-    if (has(cache, base)) {
+    if (own.call(cache, base)) {
       tick(cache[base]);
     } else {
       findUp.one('.git', file.dirname, function (err, git) {
