@@ -11,7 +11,7 @@
     "diff",
     "pr"
   ],
-  "repository": "https://github.com/unifiedjs/unified-diff",
+  "repository": "unifiedjs/unified-diff",
   "bugs": "https://github.com/unifiedjs/unified-diff/issues",
   "author": "Titus Wormer <tituswormer@gmail.com> (http://wooorm.com)",
   "contributors": [
