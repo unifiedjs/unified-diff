@@ -130,6 +130,14 @@ not change.
 There are no options.  If there’s a `TRAVIS_COMMIT_RANGE` environment
 variable this plugin runs, otherwise it’s a noop.
 
+## Contribute
+
+See [`contribute.md` in `unifiedjs/unified`][contribute] for ways to get
+started.
+
+This organisation has a [Code of Conduct][coc].  By interacting with this
+repository, organisation, or community you agree to abide by its terms.
+
 ## License
 
 [MIT][license] © [Titus Wormer][author]
@@ -155,3 +163,7 @@ variable this plugin runs, otherwise it’s a noop.
 [alex]: https://github.com/wooorm/alex
 
 [retext]: https://github.com/wooorm/retext/blob/master/doc/plugins.md#list-of-plugins
+
+[contribute]: https://github.com/unifiedjs/unified/blob/master/contributing.md
+
+[coc]: https://github.com/unifiedjs/unified/blob/master/code-of-conduct.md
