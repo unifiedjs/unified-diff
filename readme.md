@@ -162,7 +162,7 @@ repository, organisation, or community you agree to abide by its terms.
 
 [alex]: https://github.com/wooorm/alex
 
-[retext]: https://github.com/wooorm/retext/blob/master/doc/plugins.md#list-of-plugins
+[retext]: https://github.com/retextjs/retext/blob/master/doc/plugins.md#list-of-plugins
 
 [contribute]: https://github.com/unifiedjs/unified/blob/master/contributing.md
 
