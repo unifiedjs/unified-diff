@@ -103,7 +103,7 @@ function diff() {
 function parse(data) {
   var lines = data.lines;
   var line = lines[0];
-  var re = /^@@ -([0-9]+),?([0-9]+)? \+([0-9]+),?([0-9]+)? @@/;
+  var re = /^@@ -(\d+),?(\d+)? \+(\d+),?(\d+)? @@/;
   var match = line.match(re);
   var result = {path: data.bPath};
   var ranges = [];

@@ -25,18 +25,18 @@
     "vfile-find-up": "^2.0.0"
   },
   "devDependencies": {
-    "execa": "^0.8.0",
+    "execa": "^0.10.0",
     "nlcst-to-string": "^2.0.0",
     "nyc": "^11.1.0",
-    "remark-cli": "^4.0.0",
-    "remark-preset-wooorm": "^3.0.0",
+    "remark-cli": "^5.0.0",
+    "remark-preset-wooorm": "^4.0.0",
     "retext": "^5.0.0",
     "rimraf": "^2.5.4",
     "tape": "^4.0.0",
-    "to-vfile": "^2.0.0",
+    "to-vfile": "^4.0.0",
     "trough": "^1.0.0",
     "unist-util-visit": "^1.1.0",
-    "xo": "^0.18.0"
+    "xo": "^0.21.0"
   },
   "scripts": {
     "build-md": "remark . -qfo",
@@ -54,7 +54,12 @@
   },
   "xo": {
     "space": true,
-    "esnext": false
+    "esnext": false,
+    "rules": {
+      "no-var": "off",
+      "prefer-arrow-callback": "off",
+      "object-shorthand": "off"
+    }
   },
   "remarkConfig": {
     "plugins": [
