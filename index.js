@@ -1,146 +1,153 @@
-'use strict';
+'use strict'
 
-var path = require('path');
-var gitDiffTree = require('git-diff-tree');
-var findUp = require('vfile-find-up');
+var path = require('path')
+var gitDiffTree = require('git-diff-tree')
+var findUp = require('vfile-find-up')
 
-module.exports = diff;
+module.exports = diff
 
-var own = {}.hasOwnProperty;
+var own = {}.hasOwnProperty
 
-var previousRange;
+var previousRange
 
 function diff() {
-  var cache = {};
+  var cache = {}
 
-  return transform;
+  return transform
 
   function transform(tree, file, next) {
-    var base = file.dirname;
-    var commitRange = process.env.TRAVIS_COMMIT_RANGE;
-    var range = (commitRange || '').split(/\.{3}/);
+    var base = file.dirname
+    var commitRange = process.env.TRAVIS_COMMIT_RANGE
+    var range = (commitRange || '').split(/\.{3}/)
 
     if (!base || !commitRange || range.length !== 2) {
-      return next();
+      return next()
     }
 
     if (commitRange !== previousRange) {
-      cache = {};
-      previousRange = commitRange;
+      cache = {}
+      previousRange = commitRange
     }
 
     if (own.call(cache, base)) {
-      tick(cache[base]);
+      tick(cache[base])
     } else {
-      findUp.one('.git', file.dirname, function (err, git) {
-        /* istanbul ignore if - never happens */
-        if (err) {
-          return next(err);
-        }
+      findUp.one('.git', file.dirname, ongit)
+    }
 
-        /* istanbul ignore if - not testable in a Git repo... */
-        if (!git) {
-          return next(new Error('Not in a git repository'));
-        }
+    function ongit(err, git) {
+      /* istanbul ignore if - never happens */
+      if (err) {
+        return next(err)
+      }
 
-        cache[base] = git.dirname;
-        tick(git.dirname);
-      });
+      /* istanbul ignore if - not testable in a Git repo... */
+      if (!git) {
+        return next(new Error('Not in a git repository'))
+      }
+
+      cache[base] = git.dirname
+      tick(git.dirname)
     }
 
     function tick(root) {
-      var diffs = {};
+      var diffs = {}
+      var revs = {originalRev: range[0], rev: range[1]}
 
-      gitDiffTree(path.join(root, '.git'), {originalRev: range[0], rev: range[1]})
+      gitDiffTree(path.join(root, '.git'), revs)
         .on('error', next)
         .on('data', ondata)
-        .on('end', onend);
+        .on('end', onend)
 
       function ondata(type, data) {
-        var info = type === 'patch' && parse(data);
-        var fp;
+        var info = type === 'patch' && parse(data)
+        var fp
 
         if (info) {
-          fp = path.resolve(root, info.path);
+          fp = path.resolve(root, info.path)
 
           /* istanbul ignore else - long diffs. */
           if (!(fp in diffs)) {
-            diffs[fp] = [];
+            diffs[fp] = []
           }
 
-          diffs[fp] = diffs[fp].concat(info.ranges);
+          diffs[fp] = diffs[fp].concat(info.ranges)
         }
       }
 
       function onend() {
-        tock(diffs);
+        tock(diffs)
       }
 
       function tock(patches) {
-        var fp = path.resolve(file.cwd, file.path);
-        var ranges = patches[fp];
+        var fp = path.resolve(file.cwd, file.path)
+        var ranges = patches[fp]
 
         /* Unchanged file. */
         if (!ranges || ranges.length === 0) {
-          file.messages = [];
-          return next();
+          file.messages = []
+          return next()
         }
 
-        file.messages = file.messages.filter(function (message) {
-          var line = message.line;
+        file.messages = file.messages.filter(filter)
 
-          return ranges.some(function (range) {
-            return line >= range[0] && line <= range[1];
-          });
-        });
+        next()
 
-        next();
+        function filter(message) {
+          var line = message.line
+
+          return ranges.some(some)
+
+          function some(range) {
+            return line >= range[0] && line <= range[1]
+          }
+        }
       }
     }
   }
 }
 
 function parse(data) {
-  var lines = data.lines;
-  var line = lines[0];
-  var re = /^@@ -(\d+),?(\d+)? \+(\d+),?(\d+)? @@/;
-  var match = line.match(re);
-  var result = {path: data.bPath};
-  var ranges = [];
-  var start;
-  var index;
-  var length;
-  var position;
-  var no;
+  var lines = data.lines
+  var line = lines[0]
+  var re = /^@@ -(\d+),?(\d+)? \+(\d+),?(\d+)? @@/
+  var match = line.match(re)
+  var result = {path: data.bPath}
+  var ranges = []
+  var start
+  var index
+  var length
+  var position
+  var no
 
   /* istanbul ignore if - should not happen, maybe if
    * Git returns weird diffs? */
   if (!match) {
-    return;
+    return
   }
 
-  index = 0;
-  length = lines.length;
-  start = parseInt(match[3], 10) - 1;
-  result.ranges = ranges;
+  index = 0
+  length = lines.length
+  start = parseInt(match[3], 10) - 1
+  result.ranges = ranges
 
   while (++index < length) {
-    line = lines[index];
+    line = lines[index]
 
     if (line.charAt(0) !== '+') {
-      position = null;
-      continue;
+      position = null
+      continue
     }
 
-    no = start + index;
+    no = start + index
 
     if (position === null || position === undefined) {
-      position = ranges.length;
-      ranges.push([no, no]);
+      position = ranges.length
+      ranges.push([no, no])
     } else {
-      ranges[position][1] = no;
+      ranges[position][1] = no
     }
   }
 
-  return result;
+  return result
 }

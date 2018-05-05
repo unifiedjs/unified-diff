@@ -1,24 +1,24 @@
-'use strict';
+'use strict'
 
-var retext = require('retext');
-var visit = require('unist-util-visit');
-var toString = require('nlcst-to-string');
-var diff = require('..');
+var retext = require('retext')
+var visit = require('unist-util-visit')
+var toString = require('nlcst-to-string')
+var diff = require('..')
 
 module.exports = retext()
   .use(lorem)
   .use(diff)
-  .freeze();
+  .freeze()
 
 function lorem() {
-  return transformer;
+  return transformer
 
   function transformer(tree, file) {
-    visit(tree, 'WordNode', visitor);
+    visit(tree, 'WordNode', visitor)
 
     function visitor(node) {
       if (/lorem/i.test(toString(node))) {
-        file.warn('No lorem!', node);
+        file.warn('No lorem!', node)
       }
     }
   }

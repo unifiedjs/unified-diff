@@ -51,34 +51,36 @@ index 360b225..5a96b86 100644
 We have some natural language checking in `lint.js`:
 
 ```js
-var diff = require('unified-diff');
-var vfile = require('to-vfile');
-var unified = require('unified');
-var markdown = require('remark-parse');
-var stringify = require('remark-stringify');
-var remark2retext = require('remark-retext');
-var english = require('retext-english');
-var repetition = require('retext-repeated-words');
-var article = require('retext-indefinite-article');
-var report = require('vfile-reporter');
+var diff = require('unified-diff')
+var vfile = require('to-vfile')
+var unified = require('unified')
+var markdown = require('remark-parse')
+var stringify = require('remark-stringify')
+var remark2retext = require('remark-retext')
+var english = require('retext-english')
+var repetition = require('retext-repeated-words')
+var article = require('retext-indefinite-article')
+var report = require('vfile-reporter')
 
-vfile.read('readme.md', function (err, file) {
-  if (err) throw err;
+vfile.read('readme.md', function(err, file) {
+  if (err) throw err
 
   unified()
     .use(markdown)
-    .use(remark2retext, unified()
-      .use(english)
-      .use(repetition)
-      .use(article)
+    .use(
+      remark2retext,
+      unified()
+        .use(english)
+        .use(repetition)
+        .use(article)
     )
     .use(stringify)
     .use(diff)
-    .process(file, function (err) {
-      console.error(report(err || file));
-      process.exit(err || file.messages.length ? 1 : 0);
-    });
-});
+    .process(file, function(err) {
+      console.error(report(err || file))
+      process.exit(err || file.messages.length ? 1 : 0)
+    })
+})
 ```
 
 `lint.js` is hooked up to run on Travis in `.travis.yml` like so:
