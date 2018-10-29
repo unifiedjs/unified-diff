@@ -32,7 +32,7 @@ npm install unified-diff
 Say we have this `readme.md`.  Note the `an an`.
 
 ```md
-This is an an example.
+This is an example.
 ```
 
 Then, someone creates a PR which adds the following diff:
@@ -43,7 +43,7 @@ index 360b225..5a96b86 100644
 --- a/readme.md
 +++ b/readme.md
 @@ -1 +1,3 @@
- This is an an example.
+ This is an example.
 +
 +Some more more text. A error.
 ```
@@ -114,7 +114,7 @@ index 360b225..5a96b86 100644
 --- a/readme.md
 +++ b/readme.md
 @@ -1 +1,3 @@
- This is an an example.
+ This is an example.
 +
 +Some more text. An error.
 ```
