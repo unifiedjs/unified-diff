@@ -18,7 +18,7 @@ function lorem() {
 
     function visitor(node) {
       if (/lorem/i.test(toString(node))) {
-        file.warn('No lorem!', node)
+        file.message('No lorem!', node)
       }
     }
   }
