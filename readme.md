@@ -1,37 +1,41 @@
-# unified-diff [![Build Status][travis-badge]][travis] [![Coverage Status][codecov-badge]][codecov]
+# unified-diff
 
-[Unified][] plugin to ignore unrelated messages.  Currently works in
-PRs on Travis.
+[![Build][build-badge]][build]
+[![Coverage][coverage-badge]][coverage]
+[![Downloads][downloads-badge]][downloads]
+[![Sponsors][sponsors-badge]][collective]
+[![Backers][backers-badge]][collective]
+[![Chat][chat-badge]][chat]
 
-When working with natural language, having tools that check cumbersome
-tasks can be very useful (think [alex][] or [retext][] plugins).  However,
-natural language isn’t as strict as code.  Integrating natural language
-checking in a CI often doesn’t work well due to false positives.
+[**unified**][unified] plugin to ignore unrelated messages.
+Currently works in PRs on Travis.
+
+When working with natural language, having tools that check cumbersome tasks
+can be very useful (think [alex][] or [retext][] plugins).
+However, natural language isn’t as strict as code.
+Integrating natural language checking in a CI often doesn’t work well due to
+false positives.
 It’s possible to add a long list of exceptions, but this soon becomes
 unmanageable.
 
-This plugin solves that problem, when in Travis, by ignoring any
-messages on unchanged lines.  When run outside Travis, this plugin
-doesn’t do anything.
+This plugin solves that problem, when in Travis, by ignoring any messages on
+unchanged lines.
+When run outside Travis, this plugin doesn’t do anything.
 
-###### TODO
+## Install
 
-*   [ ] Add support for other CIs (ping if you want to work on this);
-*   [ ] Add non-CI support (I’m not yet sure how though).
+[npm][]:
 
-## Installation
-
-[npm][npm-install]:
-
-```bash
+```sh
 npm install unified-diff
 ```
 
-## Usage
+## Use
 
-Say we have this `readme.md`.  Note the `an an`.
+Say we have this `readme.md`.
+Note the `an an`.
 
-```md
+```markdown
 This is an an example.
 ```
 
@@ -94,8 +98,7 @@ script:
 ```
 
 When run in Travis, we’ll see the following printed on **stderr**(4).
-Note that `an an` on L1 is not included because it’s unrelated to this
-PR.
+Note that `an an` on L1 is not included because it’s unrelated to this PR.
 
 ```txt
 readme.md
@@ -119,26 +122,33 @@ index 360b225..5a96b86 100644
 +Some more text. An error.
 ```
 
-This time our lint task exits successfully, even though L1 would
-normally emit an error, but it’s unrelated to the PR.
+This time our lint task exits successfully, even though L1 would normally emit
+an error, but it’s unrelated to the PR.
 
 ## API
 
 ### `processor.use(diff)`
 
-Ignore messages emitted by plugins before `diff` for lines that did
-not change.
+Ignore messages emitted by plugins before `diff` for lines that did not change.
 
-There are no options.  If there’s a `TRAVIS_COMMIT_RANGE` environment
-variable this plugin runs, otherwise it’s a noop.
+There are no options.
+If there’s a `TRAVIS_COMMIT_RANGE` environment variable this plugin runs,
+otherwise it’s a noop.
+
+###### TODO
+
+*   [ ] Add support for other CIs (ping if you want to work on this)
+*   [ ] Add non-CI support (I’m not yet sure how though)
 
 ## Contribute
 
-See [`contributing.md` in `unifiedjs/unified`][contributing] for ways to get
-started.
+See [`contributing.md`][contributing] in [`unifiedjs/.github`][health] for ways
+to get started.
+See [`support.md`][support] for ways to get help.
 
-This organisation has a [Code of Conduct][coc].  By interacting with this
-repository, organisation, or community you agree to abide by its terms.
+This project has a [Code of Conduct][coc].
+By interacting with this repository, organisation, or community you agree to
+abide by its terms.
 
 ## License
 
@@ -146,15 +156,37 @@ repository, organisation, or community you agree to abide by its terms.
 
 <!-- Definitions -->
 
-[travis-badge]: https://img.shields.io/travis/unifiedjs/unified-diff.svg
+[build-badge]: https://img.shields.io/travis/unifiedjs/unified-diff.svg
 
-[travis]: https://travis-ci.org/unifiedjs/unified-diff
+[build]: https://travis-ci.org/unifiedjs/unified-diff
 
-[codecov-badge]: https://img.shields.io/codecov/c/github/unifiedjs/unified-diff.svg
+[coverage-badge]: https://img.shields.io/codecov/c/github/unifiedjs/unified-diff.svg
 
-[codecov]: https://codecov.io/github/unifiedjs/unified-diff
+[coverage]: https://codecov.io/github/unifiedjs/unified-diff
 
-[npm-install]: https://docs.npmjs.com/cli/install
+[downloads-badge]: https://img.shields.io/npm/dm/unified-diff.svg
+
+[downloads]: https://www.npmjs.com/package/unified-diff
+
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
+
+[collective]: https://opencollective.com/unified
+
+[chat-badge]: https://img.shields.io/badge/join%20the%20community-on%20spectrum-7b16ff.svg
+
+[chat]: https://spectrum.chat/unified
+
+[npm]: https://docs.npmjs.com/cli/install
+
+[health]: https://github.com/unifiedjs/.github
+
+[contributing]: https://github.com/unifiedjs/.github/blob/master/contributing.md
+
+[support]: https://github.com/unifiedjs/.github/blob/master/support.md
+
+[coc]: https://github.com/unifiedjs/.github/blob/master/code-of-conduct.md
 
 [license]: license
 
@@ -165,7 +197,3 @@ repository, organisation, or community you agree to abide by its terms.
 [alex]: https://github.com/wooorm/alex
 
 [retext]: https://github.com/retextjs/retext/blob/master/doc/plugins.md#list-of-plugins
-
-[contributing]: https://github.com/unifiedjs/unified/blob/master/contributing.md
-
-[coc]: https://github.com/unifiedjs/unified/blob/master/code-of-conduct.md
