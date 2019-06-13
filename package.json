@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "git-diff-tree": "^1.0.0",
-    "vfile-find-up": "^3.0.0"
+    "vfile-find-up": "^5.0.0"
   },
   "devDependencies": {
     "execa": "^1.0.0",
