@@ -36,12 +36,12 @@ function diff() {
     }
 
     function ongit(err, git) {
-      /* istanbul ignore if - never happens */
+      /* istanbul ignore if - Never happens */
       if (err) {
         return next(err)
       }
 
-      /* istanbul ignore if - not testable in a Git repo... */
+      /* istanbul ignore if - Not testable in a Git repo… */
       if (!git) {
         return next(new Error('Not in a git repository'))
       }
@@ -83,7 +83,7 @@ function diff() {
         var fp = path.resolve(file.cwd, file.path)
         var ranges = patches[fp]
 
-        /* Unchanged file. */
+        // Unchanged file.
         if (!ranges || ranges.length === 0) {
           file.messages = []
           return next()
@@ -120,8 +120,7 @@ function parse(data) {
   var position
   var no
 
-  /* istanbul ignore if - should not happen, maybe if
-   * Git returns weird diffs? */
+  /* istanbul ignore if - Should not happen, maybe if Git returns weird diffs? */
   if (!match) {
     return
   }
