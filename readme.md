@@ -156,7 +156,7 @@ repository, organisation, or community you agree to abide by its terms.
 
 [npm-install]: https://docs.npmjs.com/cli/install
 
-[license]: LICENSE
+[license]: license
 
 [author]: https://wooorm.com
 
