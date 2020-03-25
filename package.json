@@ -33,7 +33,6 @@
     "vfile-find-up": "^5.0.0"
   },
   "devDependencies": {
-    "execa": "^4.0.0",
     "nlcst-to-string": "^2.0.0",
     "nyc": "^15.0.0",
     "prettier": "^2.0.0",
@@ -43,7 +42,6 @@
     "rimraf": "^3.0.0",
     "tape": "^4.0.0",
     "to-vfile": "^6.0.0",
-    "trough": "^1.0.0",
     "unist-util-visit": "^2.0.0",
     "xo": "^0.28.0"
   },

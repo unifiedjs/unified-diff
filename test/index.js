@@ -1,13 +1,14 @@
 'use strict'
 
-var fs = require('fs')
+var cp = require('child_process')
 var path = require('path')
-var trough = require('trough')
+var promisify = require('util').promisify
 var test = require('tape')
-var execa = require('execa')
-var rimraf = require('rimraf')
+var rimraf = promisify(require('rimraf'))
 var vfile = require('to-vfile')
 var processor = require('./processor')()
+
+var exec = promisify(cp.exec)
 
 test('diff()', function (t) {
   var current = process.cwd()
@@ -22,6 +23,7 @@ test('diff()', function (t) {
   var stepThree = 'Lorem.\n' + stepOne + '\nLorem.'
   var other = 'Lorem ipsum.'
   var initial
+  var final
 
   delete process.env.TRAVIS_COMMIT_RANGE
 
@@ -29,160 +31,122 @@ test('diff()', function (t) {
 
   process.chdir(path.join(current, 'test'))
 
-  trough()
-    .use(function () {
-      return execa('git', ['init'])
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'example.txt', contents: stepOne})
+  exec('git init')
+    // Set up.
+    .then(() => {
+      return exec('git config --global user.email').catch(oncatch)
 
-      processor.process(file, function (err) {
-        if (err) {
-          return next(err)
-        }
-
-        t.deepEqual(
-          file.messages.map(String),
-          ['example.txt:1:1-1:6: No lorem!', 'example.txt:3:1-3:6: No lorem!'],
-          'should set messages'
+      function oncatch() {
+        return exec('git config --global user.email info@example.com').then(
+          onemail
         )
+      }
 
-        fs.writeFile(file.path, file.contents, next)
-      })
+      function onemail() {
+        return exec('git config --global user.name Ex Ample')
+      }
     })
-    .use(function () {
-      return execa('git', ['config', '--global', 'user.email']).catch(
-        function () {
-          return execa('git', [
-            'config',
-            '--global',
-            'user.email',
-            'info@example.com'
-          ]).then(function () {
-            return execa('git', ['config', '--global', 'user.name', 'Ex Ample'])
-          })
-        }
+    // Add initial file.
+    .then(() =>
+      processor.process(vfile({path: 'example.txt', contents: stepOne}))
+    )
+    .then((file) => {
+      t.deepEqual(
+        file.messages.map(String),
+        ['example.txt:1:1-1:6: No lorem!', 'example.txt:3:1-3:6: No lorem!'],
+        'should set messages'
+      )
+
+      return vfile.write(file)
+    })
+    .then(() => exec('git add example.txt'))
+    .then(() => exec('git commit -m one'))
+    .then(() => exec('git rev-parse HEAD'))
+    .then((result) => {
+      initial = result.stdout.trim()
+      return vfile.write({path: 'example.txt', contents: stepTwo})
+    })
+    // Changed files.
+    .then(() => exec('git add example.txt'))
+    .then(() => exec('git commit -m two'))
+    .then(() => exec('git rev-parse HEAD'))
+    .then((result) => {
+      final = result.stdout.trim()
+      process.env.TRAVIS_COMMIT_RANGE = [initial, final].join('...')
+
+      return processor.process(vfile({path: 'example.txt', contents: stepTwo}))
+    })
+    .then((file) => {
+      t.deepEqual(
+        file.messages.map(String),
+        ['example.txt:5:1-5:6: No lorem!'],
+        'should show only messages for changed lines'
+      )
+
+      return file
+    })
+    // Again!
+    .then(() => {
+      return processor.process(vfile({path: 'example.txt', contents: stepTwo}))
+    })
+    .then((file) => {
+      t.deepEqual(
+        file.messages.map(String),
+        ['example.txt:5:1-5:6: No lorem!'],
+        'should not recheck (coverage for optimisations)'
       )
     })
-    .use(function () {
-      return execa('git', ['add', 'example.txt'])
+    // Unstages files.
+    .then(() => {
+      return processor.process(vfile({path: 'missing.txt', contents: other}))
     })
-    .use(function () {
-      return execa('git', ['commit', '-m', 'one'])
+    .then((file) => {
+      t.deepEqual(file.messages.map(String), [], 'should ignore unstaged files')
     })
-    .use(function () {
-      return execa('git', ['rev-parse', 'HEAD'])
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'example.txt', contents: stepTwo})
+    // New file.
+    .then(() => vfile.write({path: 'example.txt', contents: stepThree}))
+    .then(() => vfile.write({path: 'new.txt', contents: other}))
+    .then(() => exec('git add example.txt new.txt'))
+    .then(() => exec('git commit -m three'))
+    .then(() => exec('git rev-parse HEAD'))
+    .then((result) => {
+      final = result.stdout.trim()
 
-      initial = result.stdout
+      process.env.TRAVIS_COMMIT_RANGE = [initial, final].join('...')
 
-      fs.writeFile(file.path, file.contents, next)
+      return processor.process(
+        vfile({path: 'example.txt', contents: stepThree})
+      )
     })
-    .use(function () {
-      return execa('git', ['add', 'example.txt'])
-    })
-    .use(function () {
-      return execa('git', ['commit', '-m', 'two'])
-    })
-    .use(function () {
-      return execa('git', ['rev-parse', 'HEAD'])
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'example.txt', contents: stepTwo})
+    .then((file) => {
+      t.deepEqual(
+        file.messages.map(String),
+        ['example.txt:1:1-1:6: No lorem!', 'example.txt:6:1-6:6: No lorem!'],
+        'should deal with multiple patches'
+      )
 
-      process.env.TRAVIS_COMMIT_RANGE = [initial, result.stdout].join('...')
+      return processor.process(vfile({path: 'new.txt', contents: other}))
+    })
+    .then((file) => {
+      t.deepEqual(
+        file.messages.map(String),
+        ['new.txt:1:1-1:6: No lorem!'],
+        'should deal with new files'
+      )
 
-      processor.process(file, function (err) {
-        t.deepEqual(
-          file.messages.join(''),
-          'example.txt:5:1-5:6: No lorem!',
-          'should show only messages for changed lines'
-        )
+      return processor.process(vfile({path: 'new.txt', contents: other}))
+    })
+    // Restore
+    .then(restore, restore)
+    .then(
+      () => t.pass('should pass'),
+      (error) => t.ifErr(error, 'should not fail')
+    )
 
-        next(err)
-      })
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'example.txt', contents: stepTwo})
-
-      processor.process(file, function (err) {
-        t.deepEqual(
-          file.messages.join(''),
-          'example.txt:5:1-5:6: No lorem!',
-          'should not recheck (coverage for optimisations)'
-        )
-
-        next(err)
-      })
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'missing.txt', contents: other})
-
-      processor.process(file, function (err) {
-        t.deepEqual(file.messages, [], 'should ignore unstaged files')
-        next(err)
-      })
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'new.txt', contents: other})
-      fs.writeFile(file.path, file.contents, next)
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'example.txt', contents: stepThree})
-      fs.writeFile(file.path, file.contents, next)
-    })
-    .use(function () {
-      return execa('git', ['add', 'example.txt', 'new.txt'])
-    })
-    .use(function () {
-      return execa('git', ['commit', '-m', 'three'])
-    })
-    .use(function () {
-      return execa('git', ['rev-parse', 'HEAD'])
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'example.txt', contents: stepTwo})
-
-      process.env.TRAVIS_COMMIT_RANGE = [initial, result.stdout].join('...')
-
-      processor.process(file, function (err) {
-        t.deepEqual(
-          file.messages.map(String),
-          ['example.txt:1:1-1:6: No lorem!', 'example.txt:5:1-5:6: No lorem!'],
-          'should deal with multiple patches'
-        )
-
-        next(err)
-      })
-    })
-    .use(function (result, next) {
-      var file = vfile({path: 'new.txt', contents: other})
-
-      processor.process(file, function (err) {
-        t.deepEqual(
-          file.messages.join(''),
-          'new.txt:1:1-1:6: No lorem!',
-          'should deal with new files'
-        )
-
-        next(err)
-      })
-    })
-    .use(function () {
-      process.env.TRAVIS_COMMIT_RANGE = range
-    })
-    .use(function (result, next) {
-      rimraf('.git', next)
-    })
-    .use(function (result, next) {
-      rimraf('new.txt', next)
-    })
-    .use(function (result, next) {
-      rimraf('example.txt', next)
-    })
-    .run(function (err) {
-      t.ifErr(err, 'should not fail')
-    })
+  function restore() {
+    process.env.TRAVIS_COMMIT_RANGE = range
+    return rimraf('.git')
+      .then(() => rimraf('new.txt'))
+      .then(() => rimraf('example.txt'))
+  }
 })
