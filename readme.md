@@ -66,21 +66,15 @@ var repetition = require('retext-repeated-words')
 var article = require('retext-indefinite-article')
 var report = require('vfile-reporter')
 
-vfile.read('readme.md', function(err, file) {
+vfile.read('readme.md', function (err, file) {
   if (err) throw err
 
   unified()
     .use(markdown)
-    .use(
-      remark2retext,
-      unified()
-        .use(english)
-        .use(repetition)
-        .use(article)
-    )
+    .use(remark2retext, unified().use(english).use(repetition).use(article))
     .use(stringify)
     .use(diff)
-    .process(file, function(err) {
+    .process(file, function (err) {
       console.error(report(err || file))
       process.exit(err || file.messages.length ? 1 : 0)
     })
