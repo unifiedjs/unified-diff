@@ -9,7 +9,7 @@ var rimraf = require('rimraf')
 var vfile = require('to-vfile')
 var processor = require('./processor')()
 
-test('travisDiff()', function(t) {
+test('diff()', function (t) {
   var current = process.cwd()
   var range = process.env.TRAVIS_COMMIT_RANGE
   var stepOne = [
@@ -30,13 +30,13 @@ test('travisDiff()', function(t) {
   process.chdir(path.join(current, 'test'))
 
   trough()
-    .use(function() {
+    .use(function () {
       return execa('git', ['init'])
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'example.txt', contents: stepOne})
 
-      processor.process(file, function(err) {
+      processor.process(file, function (err) {
         if (err) {
           return next(err)
         }
@@ -50,51 +50,51 @@ test('travisDiff()', function(t) {
         fs.writeFile(file.path, file.contents, next)
       })
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['config', '--global', 'user.email']).catch(
-        function() {
+        function () {
           return execa('git', [
             'config',
             '--global',
             'user.email',
             'info@example.com'
-          ]).then(function() {
+          ]).then(function () {
             return execa('git', ['config', '--global', 'user.name', 'Ex Ample'])
           })
         }
       )
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['add', 'example.txt'])
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['commit', '-m', 'one'])
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['rev-parse', 'HEAD'])
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'example.txt', contents: stepTwo})
 
       initial = result.stdout
 
       fs.writeFile(file.path, file.contents, next)
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['add', 'example.txt'])
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['commit', '-m', 'two'])
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['rev-parse', 'HEAD'])
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'example.txt', contents: stepTwo})
 
       process.env.TRAVIS_COMMIT_RANGE = [initial, result.stdout].join('...')
 
-      processor.process(file, function(err) {
+      processor.process(file, function (err) {
         t.deepEqual(
           file.messages.join(''),
           'example.txt:5:1-5:6: No lorem!',
@@ -104,10 +104,10 @@ test('travisDiff()', function(t) {
         next(err)
       })
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'example.txt', contents: stepTwo})
 
-      processor.process(file, function(err) {
+      processor.process(file, function (err) {
         t.deepEqual(
           file.messages.join(''),
           'example.txt:5:1-5:6: No lorem!',
@@ -117,37 +117,37 @@ test('travisDiff()', function(t) {
         next(err)
       })
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'missing.txt', contents: other})
 
-      processor.process(file, function(err) {
+      processor.process(file, function (err) {
         t.deepEqual(file.messages, [], 'should ignore unstaged files')
         next(err)
       })
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'new.txt', contents: other})
       fs.writeFile(file.path, file.contents, next)
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'example.txt', contents: stepThree})
       fs.writeFile(file.path, file.contents, next)
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['add', 'example.txt', 'new.txt'])
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['commit', '-m', 'three'])
     })
-    .use(function() {
+    .use(function () {
       return execa('git', ['rev-parse', 'HEAD'])
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'example.txt', contents: stepTwo})
 
       process.env.TRAVIS_COMMIT_RANGE = [initial, result.stdout].join('...')
 
-      processor.process(file, function(err) {
+      processor.process(file, function (err) {
         t.deepEqual(
           file.messages.map(String),
           ['example.txt:1:1-1:6: No lorem!', 'example.txt:5:1-5:6: No lorem!'],
@@ -157,10 +157,10 @@ test('travisDiff()', function(t) {
         next(err)
       })
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       var file = vfile({path: 'new.txt', contents: other})
 
-      processor.process(file, function(err) {
+      processor.process(file, function (err) {
         t.deepEqual(
           file.messages.join(''),
           'new.txt:1:1-1:6: No lorem!',
@@ -170,19 +170,19 @@ test('travisDiff()', function(t) {
         next(err)
       })
     })
-    .use(function() {
+    .use(function () {
       process.env.TRAVIS_COMMIT_RANGE = range
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       rimraf('.git', next)
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       rimraf('new.txt', next)
     })
-    .use(function(result, next) {
+    .use(function (result, next) {
       rimraf('example.txt', next)
     })
-    .run(function(err) {
+    .run(function (err) {
       t.ifErr(err, 'should not fail')
     })
 })

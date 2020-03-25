@@ -5,10 +5,7 @@ var visit = require('unist-util-visit')
 var toString = require('nlcst-to-string')
 var diff = require('..')
 
-module.exports = retext()
-  .use(lorem)
-  .use(diff)
-  .freeze()
+module.exports = retext().use(lorem).use(diff).freeze()
 
 function lorem() {
   return transformer

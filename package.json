@@ -33,19 +33,19 @@
     "vfile-find-up": "^5.0.0"
   },
   "devDependencies": {
-    "execa": "^2.0.0",
+    "execa": "^4.0.0",
     "nlcst-to-string": "^2.0.0",
-    "nyc": "^14.0.0",
-    "prettier": "^1.0.0",
-    "remark-cli": "^6.0.0",
-    "remark-preset-wooorm": "^5.0.0",
-    "retext": "^6.0.0",
-    "rimraf": "^2.5.4",
+    "nyc": "^15.0.0",
+    "prettier": "^2.0.0",
+    "remark-cli": "^7.0.0",
+    "remark-preset-wooorm": "^6.0.0",
+    "retext": "^7.0.0",
+    "rimraf": "^3.0.0",
     "tape": "^4.0.0",
     "to-vfile": "^6.0.0",
     "trough": "^1.0.0",
-    "unist-util-visit": "^1.1.0",
-    "xo": "^0.24.0"
+    "unist-util-visit": "^2.0.0",
+    "xo": "^0.28.0"
   },
   "scripts": {
     "format": "remark . -qfo && prettier --write \"**/*.js\" && xo --fix",
@@ -69,7 +69,10 @@
   },
   "xo": {
     "prettier": true,
-    "esnext": false
+    "esnext": false,
+    "rules": {
+      "unicorn/string-content": "off"
+    }
   },
   "remarkConfig": {
     "plugins": [
