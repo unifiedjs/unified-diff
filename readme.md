@@ -178,11 +178,11 @@ abide by its terms.
 
 [health]: https://github.com/unifiedjs/.github
 
-[contributing]: https://github.com/unifiedjs/.github/blob/master/contributing.md
+[contributing]: https://github.com/unifiedjs/.github/blob/HEAD/contributing.md
 
-[support]: https://github.com/unifiedjs/.github/blob/master/support.md
+[support]: https://github.com/unifiedjs/.github/blob/HEAD/support.md
 
-[coc]: https://github.com/unifiedjs/.github/blob/master/code-of-conduct.md
+[coc]: https://github.com/unifiedjs/.github/blob/HEAD/code-of-conduct.md
 
 [license]: license
 
@@ -192,4 +192,4 @@ abide by its terms.
 
 [alex]: https://github.com/wooorm/alex
 
-[retext]: https://github.com/retextjs/retext/blob/master/doc/plugins.md#list-of-plugins
+[retext]: https://github.com/retextjs/retext/blob/HEAD/doc/plugins.md#list-of-plugins
