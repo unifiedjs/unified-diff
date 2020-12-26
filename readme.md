@@ -152,9 +152,9 @@ abide by its terms.
 
 <!-- Definitions -->
 
-[build-badge]: https://img.shields.io/travis/unifiedjs/unified-diff.svg
+[build-badge]: https://github.com/unifiedjs/unified-diff/workflows/main/badge.svg
 
-[build]: https://travis-ci.org/unifiedjs/unified-diff
+[build]: https://github.com/unifiedjs/unified-diff/actions
 
 [coverage-badge]: https://img.shields.io/codecov/c/github/unifiedjs/unified-diff.svg
 
