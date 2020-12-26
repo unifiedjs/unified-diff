@@ -8,7 +8,7 @@
 [![Chat][chat-badge]][chat]
 
 [**unified**][unified] plugin to ignore unrelated messages.
-Currently works in PRs on Travis.
+Currently works in PRs on Travis and GitHub Actions.
 
 When working with natural language, having tools that check cumbersome tasks
 can be very useful (think [alex][] or [retext][] plugins).
@@ -18,9 +18,9 @@ false positives.
 It’s possible to add a long list of exceptions, but this soon becomes
 unmanageable.
 
-This plugin solves that problem, when in Travis, by ignoring any messages on
+This plugin solves that problem, when in CIs, by ignoring any messages on
 unchanged lines.
-When run outside Travis, this plugin doesn’t do anything.
+When run outside supported CIs this plugin doesn’t do anything.
 
 ## Install
 
@@ -91,7 +91,9 @@ script:
 # ...
 ```
 
-When run in Travis, we’ll see the following printed on **stderr**(4).
+(or in an equivalent GH Actions workflow file)
+
+When run in CI, we’ll see the following printed on **stderr**(4).
 Note that `an an` on L1 is not included because it’s unrelated to this PR.
 
 ```txt
@@ -102,7 +104,7 @@ readme.md
 ⚠ 2 warnings
 ```
 
-As there are messages, the build exits with `1`, thus failing Travis.
+As there are messages, the build exits with `1`, thus failing CI.
 The user sees this and amends the PR to the following:
 
 ```diff
@@ -126,8 +128,9 @@ an error, but it’s unrelated to the PR.
 Ignore messages emitted by plugins before `diff` for lines that did not change.
 
 There are no options.
-If there’s a `TRAVIS_COMMIT_RANGE` environment variable this plugin runs,
-otherwise it does nothing.
+If there’s a `TRAVIS_COMMIT_RANGE`, `GITHUB_BASE_REF` and `GITHUB_HEAD_REF`, or
+`GITHUB_SHA` environment variable, then this plugin runs, otherwise it does
+nothing.
 
 ###### TODO
 
