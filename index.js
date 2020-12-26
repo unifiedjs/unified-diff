@@ -17,8 +17,27 @@ function diff() {
 
   function transform(tree, file, next) {
     var base = file.dirname
-    var commitRange = process.env.TRAVIS_COMMIT_RANGE
-    var range = (commitRange || '').split(/\.{3}/)
+    var commitRange
+    var range
+
+    // Looks like Travis.
+    if (process.env.TRAVIS_COMMIT_RANGE) {
+      commitRange = process.env.TRAVIS_COMMIT_RANGE
+      range = commitRange.split(/\.{3}/)
+    }
+    // Looks like GH Actions.
+    else if (process.env.GITHUB_SHA) {
+      range =
+        // This is a PR: check the whole PR.
+        // Refs take the form `refs/heads/main`.
+        process.env.GITHUB_BASE_REF && process.env.GITHUB_HEAD_REF
+          ? [
+              process.env.GITHUB_BASE_REF.split('/').pop(),
+              process.env.GITHUB_HEAD_REF.split('/').pop()
+            ]
+          : [process.env.GITHUB_SHA + '^1', process.env.GITHUB_SHA]
+      commitRange = range.join('...')
+    }
 
     if (!base || !commitRange || range.length !== 2) {
       return next()
