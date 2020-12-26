@@ -130,12 +130,12 @@ test('diff() (travis)', function (t) {
 
       return processor.process(vfile({path: 'new.txt', contents: other}))
     })
+    // Restore
+    .then(restore, restore)
     .then(
       () => t.pass('should pass'),
       (error) => t.ifErr(error, 'should not fail')
     )
-    // Restore
-    .then(restore, restore)
 
   function restore() {
     delete process.env.TRAVIS_COMMIT_RANGE
@@ -160,8 +160,6 @@ test('diff() (GitHub Actions)', function (t) {
   t.plan(3)
 
   exec('git init')
-    // Set up.
-    .then(() => exec('git config --global user.email').catch(setEmailAndName))
     // Add initial file.
     .then(() => vfile.write({path: 'example.txt', contents: stepOne}))
     .then(() => exec('git add example.txt'))
@@ -210,16 +208,17 @@ test('diff() (GitHub Actions)', function (t) {
       )
     })
     // Restore
+    .then(restore, restore)
     .then(
       () => t.pass('should pass'),
       (error) => t.ifErr(error, 'should not fail')
     )
-    .then(restore, restore)
 
   function restore() {
-    return rimraf('.git')
-      .then(() => rimraf('new.txt'))
-      .then(() => rimraf('example.txt'))
+    delete process.env.GITHUB_SHA
+    delete process.env.GITHUB_BASE_REF
+    delete process.env.GITHUB_HEAD_REF
+    return rimraf('.git').then(() => rimraf('example.txt'))
   }
 })
 
