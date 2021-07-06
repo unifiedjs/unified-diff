@@ -54,10 +54,10 @@ function diff() {
       findUp.one('.git', file.dirname, ongit)
     }
 
-    function ongit(err, git) {
+    function ongit(error, git) {
       /* istanbul ignore if - Never happens */
-      if (err) {
-        return next(err)
+      if (error) {
+        return next(error)
       }
 
       /* istanbul ignore if - Not testable in a Git repo… */
@@ -108,19 +108,13 @@ function diff() {
           return next()
         }
 
-        file.messages = file.messages.filter(filter)
+        file.messages = file.messages.filter((message) =>
+          ranges.some(
+            (range) => message.line >= range[0] && message.line <= range[1]
+          )
+        )
 
         next()
-
-        function filter(message) {
-          var line = message.line
-
-          return ranges.some(some)
-
-          function some(range) {
-            return line >= range[0] && line <= range[1]
-          }
-        }
       }
     }
   }

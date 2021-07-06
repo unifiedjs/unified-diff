@@ -6,7 +6,7 @@ var promisify = require('util').promisify
 var test = require('tape')
 var rimraf = promisify(require('rimraf'))
 var vfile = require('to-vfile')
-var processor = require('./processor')()
+var processor = require('./processor.js')()
 
 var exec = promisify(cp.exec)
 
@@ -49,7 +49,7 @@ test('diff() (travis)', function (t) {
     )
     .then((file) => {
       t.deepEqual(
-        file.messages.map(String),
+        file.messages.map((m) => String(m)),
         ['example.txt:1:1-1:6: No lorem!', 'example.txt:3:1-3:6: No lorem!'],
         'should set messages'
       )
@@ -74,7 +74,7 @@ test('diff() (travis)', function (t) {
     })
     .then((file) => {
       t.deepEqual(
-        file.messages.map(String),
+        file.messages.map((m) => String(m)),
         ['example.txt:5:1-5:6: No lorem!'],
         'should show only messages for changed lines'
       )
@@ -85,7 +85,7 @@ test('diff() (travis)', function (t) {
     )
     .then((file) => {
       t.deepEqual(
-        file.messages.map(String),
+        file.messages.map((m) => String(m)),
         ['example.txt:5:1-5:6: No lorem!'],
         'should not recheck (coverage for optimisations)'
       )
@@ -95,7 +95,11 @@ test('diff() (travis)', function (t) {
       processor.process(vfile({path: 'missing.txt', contents: other}))
     )
     .then((file) => {
-      t.deepEqual(file.messages.map(String), [], 'should ignore unstaged files')
+      t.deepEqual(
+        file.messages.map((m) => String(m)),
+        [],
+        'should ignore unstaged files'
+      )
     })
     // New file.
     .then(() => vfile.write({path: 'example.txt', contents: stepThree}))
@@ -114,7 +118,7 @@ test('diff() (travis)', function (t) {
     })
     .then((file) => {
       t.deepEqual(
-        file.messages.map(String),
+        file.messages.map((m) => String(m)),
         ['example.txt:1:1-1:6: No lorem!', 'example.txt:6:1-6:6: No lorem!'],
         'should deal with multiple patches'
       )
@@ -123,7 +127,7 @@ test('diff() (travis)', function (t) {
     })
     .then((file) => {
       t.deepEqual(
-        file.messages.map(String),
+        file.messages.map((m) => String(m)),
         ['new.txt:1:1-1:6: No lorem!'],
         'should deal with new files'
       )
@@ -175,7 +179,7 @@ test('diff() (GitHub Actions)', function (t) {
     })
     .then((file) => {
       t.deepEqual(
-        file.messages.map(String),
+        file.messages.map((m) => String(m)),
         ['example.txt:5:1-5:6: No lorem!'],
         'should show only messages for this commit'
       )
@@ -202,7 +206,7 @@ test('diff() (GitHub Actions)', function (t) {
     })
     .then((file) => {
       t.deepEqual(
-        file.messages.map(String),
+        file.messages.map((m) => String(m)),
         ['example.txt:1:1-1:6: No lorem!', 'example.txt:9:7-9:12: No lorem!'],
         'should deal with PRs'
       )
