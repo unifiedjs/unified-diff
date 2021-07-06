@@ -1,6 +1,6 @@
 import path from 'path'
 import gitDiffTree from 'git-diff-tree'
-import findUp from 'vfile-find-up'
+import {findUpOne} from 'vfile-find-up'
 
 var own = {}.hasOwnProperty
 
@@ -48,7 +48,7 @@ export default function diff() {
     if (own.call(cache, base)) {
       tick(cache[base])
     } else {
-      findUp.one('.git', file.dirname, ongit)
+      findUpOne('.git', file.dirname, ongit)
     }
 
     function ongit(error, git) {

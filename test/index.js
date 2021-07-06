@@ -3,7 +3,7 @@ import {promises as fsPromises} from 'fs'
 import path from 'path'
 import {promisify} from 'util'
 import test from 'tape'
-import vfile from 'to-vfile'
+import {toVFile} from 'to-vfile'
 import {processor} from './processor.js'
 
 var exec = promisify(cp.exec)
@@ -43,7 +43,7 @@ test('diff() (travis)', function (t) {
     .then(() => exec('git config --global user.email').catch(setEmailAndName))
     // Add initial file.
     .then(() =>
-      processor().process(vfile({path: 'example.txt', contents: stepOne}))
+      processor().process(toVFile({path: 'example.txt', value: stepOne}))
     )
     .then((file) => {
       t.deepEqual(
@@ -52,7 +52,7 @@ test('diff() (travis)', function (t) {
         'should set messages'
       )
 
-      return vfile.write(file)
+      return toVFile.write(file)
     })
     .then(() => exec('git add example.txt'))
     .then(() => exec('git commit -m one'))
@@ -61,16 +61,14 @@ test('diff() (travis)', function (t) {
       initial = result.stdout.trim()
     })
     // Change files.
-    .then(() => vfile.write({path: 'example.txt', contents: stepTwo}))
+    .then(() => toVFile.write({path: 'example.txt', value: stepTwo}))
     .then(() => exec('git add example.txt'))
     .then(() => exec('git commit -m two'))
     .then(() => exec('git rev-parse HEAD'))
     .then((result) => {
       final = result.stdout.trim()
       process.env.TRAVIS_COMMIT_RANGE = [initial, final].join('...')
-      return processor().process(
-        vfile({path: 'example.txt', contents: stepTwo})
-      )
+      return processor().process(toVFile({path: 'example.txt', value: stepTwo}))
     })
     .then((file) => {
       t.deepEqual(
@@ -81,7 +79,7 @@ test('diff() (travis)', function (t) {
     })
     // Again!
     .then(() =>
-      processor().process(vfile({path: 'example.txt', contents: stepTwo}))
+      processor().process(toVFile({path: 'example.txt', value: stepTwo}))
     )
     .then((file) => {
       t.deepEqual(
@@ -92,7 +90,7 @@ test('diff() (travis)', function (t) {
     })
     // Unstaged files.
     .then(() =>
-      processor().process(vfile({path: 'missing.txt', contents: other}))
+      processor().process(toVFile({path: 'missing.txt', value: other}))
     )
     .then((file) => {
       t.deepEqual(
@@ -102,8 +100,8 @@ test('diff() (travis)', function (t) {
       )
     })
     // New file.
-    .then(() => vfile.write({path: 'example.txt', contents: stepThree}))
-    .then(() => vfile.write({path: 'new.txt', contents: other}))
+    .then(() => toVFile.write({path: 'example.txt', value: stepThree}))
+    .then(() => toVFile.write({path: 'new.txt', value: other}))
     .then(() => exec('git add example.txt new.txt'))
     .then(() => exec('git commit -m three'))
     .then(() => exec('git rev-parse HEAD'))
@@ -113,7 +111,7 @@ test('diff() (travis)', function (t) {
       process.env.TRAVIS_COMMIT_RANGE = [initial, final].join('...')
 
       return processor().process(
-        vfile({path: 'example.txt', contents: stepThree})
+        toVFile({path: 'example.txt', value: stepThree})
       )
     })
     .then((file) => {
@@ -123,7 +121,7 @@ test('diff() (travis)', function (t) {
         'should deal with multiple patches'
       )
 
-      return processor().process(vfile({path: 'new.txt', contents: other}))
+      return processor().process(toVFile({path: 'new.txt', value: other}))
     })
     .then((file) => {
       t.deepEqual(
@@ -132,7 +130,7 @@ test('diff() (travis)', function (t) {
         'should deal with new files'
       )
 
-      return processor().process(vfile({path: 'new.txt', contents: other}))
+      return processor().process(toVFile({path: 'new.txt', value: other}))
     })
     // Restore
     .then(restore, restore)
@@ -141,12 +139,15 @@ test('diff() (travis)', function (t) {
       (error) => t.ifErr(error, 'should not fail')
     )
 
-  function restore() {
+  function restore(error) {
     delete process.env.TRAVIS_COMMIT_RANGE
-    return fsPromises
-      .rm('.git', {recursive: true})
-      .then(() => fsPromises.rm('new.txt'))
-      .then(() => fsPromises.rm('example.txt'))
+    return Promise.allSettled([
+      fsPromises.rm('.git', {recursive: true, force: true}),
+      fsPromises.rm('new.txt', {force: true}),
+      fsPromises.rm('example.txt', {force: true})
+    ]).then(() => {
+      if (error instanceof Error) throw error
+    })
   }
 })
 
@@ -166,19 +167,17 @@ test('diff() (GitHub Actions)', function (t) {
 
   exec('git init')
     // Add initial file.
-    .then(() => vfile.write({path: 'example.txt', contents: stepOne}))
+    .then(() => toVFile.write({path: 'example.txt', value: stepOne}))
     .then(() => exec('git add example.txt'))
     .then(() => exec('git commit -m one'))
     // Change file.
-    .then(() => vfile.write({path: 'example.txt', contents: stepTwo}))
+    .then(() => toVFile.write({path: 'example.txt', value: stepTwo}))
     .then(() => exec('git add example.txt'))
     .then(() => exec('git commit -m two'))
     .then(() => exec('git rev-parse HEAD'))
     .then((result) => {
       process.env.GITHUB_SHA = result.stdout.trim()
-      return processor().process(
-        vfile({path: 'example.txt', contents: stepTwo})
-      )
+      return processor().process(toVFile({path: 'example.txt', value: stepTwo}))
     })
     .then((file) => {
       t.deepEqual(
@@ -194,10 +193,10 @@ test('diff() (GitHub Actions)', function (t) {
       exec('git checkout -b other-branch')
     })
     // Change file.
-    .then(() => vfile.write({path: 'example.txt', contents: stepThree}))
+    .then(() => toVFile.write({path: 'example.txt', value: stepThree}))
     .then(() => exec('git add example.txt'))
     .then(() => exec('git commit -m three'))
-    .then(() => vfile.write({path: 'example.txt', contents: stepFour}))
+    .then(() => toVFile.write({path: 'example.txt', value: stepFour}))
     .then(() => exec('git add example.txt'))
     .then(() => exec('git commit -m four'))
     .then(() => exec('git rev-parse HEAD'))
@@ -206,7 +205,7 @@ test('diff() (GitHub Actions)', function (t) {
       process.env.GITHUB_BASE_REF = 'refs/heads/' + main
       process.env.GITHUB_HEAD_REF = 'refs/heads/other-branch'
       return processor().process(
-        vfile({path: 'example.txt', contents: stepFour})
+        toVFile({path: 'example.txt', value: stepFour})
       )
     })
     .then((file) => {
@@ -223,13 +222,16 @@ test('diff() (GitHub Actions)', function (t) {
       (error) => t.ifErr(error, 'should not fail')
     )
 
-  function restore() {
+  function restore(error) {
     delete process.env.GITHUB_SHA
     delete process.env.GITHUB_BASE_REF
     delete process.env.GITHUB_HEAD_REF
-    return fsPromises
-      .rm('.git', {recursive: true})
-      .then(() => fsPromises.rm('example.txt'))
+    return Promise.allSettled([
+      fsPromises.rm('.git', {recursive: true, force: true}),
+      fsPromises.rm('example.txt', {force: true})
+    ]).then(() => {
+      if (error instanceof Error) throw error
+    })
   }
 })
 

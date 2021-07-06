@@ -1,9 +1,16 @@
-import retext from 'retext'
-import visit from 'unist-util-visit'
-import toString from 'nlcst-to-string'
+import {unified} from 'unified'
+import retextEnglish from 'retext-english'
+import retextStringify from 'retext-stringify'
+import {visit} from 'unist-util-visit'
+import {toString} from 'nlcst-to-string'
 import unifiedDiff from '../index.js'
 
-export const processor = retext().use(lorem).use(unifiedDiff).freeze()
+export const processor = unified()
+  .use(retextEnglish)
+  .use(retextStringify)
+  .use(lorem)
+  .use(unifiedDiff)
+  .freeze()
 
 function lorem() {
   return transformer

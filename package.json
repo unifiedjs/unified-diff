@@ -33,19 +33,20 @@
   ],
   "dependencies": {
     "git-diff-tree": "^1.0.0",
-    "vfile-find-up": "^5.0.0"
+    "vfile-find-up": "^6.0.0"
   },
   "devDependencies": {
     "c8": "^7.0.0",
-    "nlcst-to-string": "^2.0.0",
+    "nlcst-to-string": "^3.0.0",
     "prettier": "^2.0.0",
     "remark-cli": "^9.0.0",
     "remark-preset-wooorm": "^8.0.0",
-    "retext": "^7.0.0",
-    "rimraf": "^3.0.0",
+    "retext-english": "^3.0.0",
+    "retext-stringify": "^2.0.0",
     "tape": "^5.0.0",
-    "to-vfile": "^6.0.0",
-    "unist-util-visit": "^2.0.0",
+    "to-vfile": "^7.0.0",
+    "unified": "^10.0.0-beta.1",
+    "unist-util-visit": "^3.0.0",
     "xo": "^0.39.0"
   },
   "scripts": {
