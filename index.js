@@ -2,19 +2,19 @@ import path from 'path'
 import gitDiffTree from 'git-diff-tree'
 import {findUpOne} from 'vfile-find-up'
 
-var own = {}.hasOwnProperty
+const own = {}.hasOwnProperty
 
-var previousRange
+let previousRange
 
 export default function diff() {
-  var cache = {}
+  let cache = {}
 
   return transform
 
   function transform(tree, file, next) {
-    var base = file.dirname
-    var commitRange
-    var range
+    const base = file.dirname
+    let commitRange
+    let range
 
     // Looks like Travis.
     if (process.env.TRAVIS_COMMIT_RANGE) {
@@ -53,114 +53,84 @@ export default function diff() {
 
     function ongit(error, git) {
       // Never happens.
-      /* c8 ignore next 3 */
-      if (error) {
-        return next(error)
-      }
+      /* c8 ignore next */
+      if (error) return next(error)
 
       // Not testable in a Git repo…
-      /* c8 ignore next 3 */
-      if (!git) {
-        return next(new Error('Not in a git repository'))
-      }
+      /* c8 ignore next */
+      if (!git) return next(new Error('Not in a git repository'))
 
       cache[base] = git.dirname
       tick(git.dirname)
     }
 
     function tick(root) {
-      var diffs = {}
-      var revs = {originalRev: range[0], rev: range[1]}
+      const diffs = {}
 
-      gitDiffTree(path.join(root, '.git'), revs)
+      gitDiffTree(path.join(root, '.git'), {
+        originalRev: range[0],
+        rev: range[1]
+      })
         .on('error', next)
-        .on('data', ondata)
-        .on('end', onend)
+        .on('data', (type, data) => {
+          if (type !== 'patch') return
 
-      function ondata(type, data) {
-        var info = type === 'patch' && parse(data)
-        var fp
+          const lines = data.lines
+          const re = /^@@ -(\d+),?(\d+)? \+(\d+),?(\d+)? @@/
+          const match = lines[0].match(re)
 
-        if (info) {
-          fp = path.resolve(root, info.path)
+          // Should not happen, maybe if Git returns weird diffs?
+          /* c8 ignore next */
+          if (!match) return
 
-          // Long diffs.
-          /* c8 ignore next 3 */
-          if (!(fp in diffs)) {
-            diffs[fp] = []
+          const ranges = []
+          const start = Number.parseInt(match[3], 10) - 1
+          let index = 0
+          let position
+
+          while (++index < lines.length) {
+            const line = lines[index]
+
+            if (line.charAt(0) === '+') {
+              const no = start + index
+
+              if (position === undefined) {
+                position = ranges.length
+                ranges.push([no, no])
+              } else {
+                ranges[position][1] = no
+              }
+            } else {
+              position = undefined
+            }
           }
 
-          diffs[fp] = diffs[fp].concat(info.ranges)
-        }
-      }
+          const fp = path.resolve(root, data.bPath)
 
-      function onend() {
-        tock(diffs)
-      }
+          // Long diffs.
+          /* c8 ignore next */
+          if (!(fp in diffs)) diffs[fp] = []
 
-      function tock(patches) {
-        var fp = path.resolve(file.cwd, file.path)
-        var ranges = patches[fp]
+          diffs[fp].push(...ranges)
+        })
+        .on('end', () => {
+          const fp = path.resolve(file.cwd, file.path)
+          const ranges = diffs[fp]
 
-        // Unchanged file.
-        if (!ranges || ranges.length === 0) {
-          file.messages = []
-          return next()
-        }
+          // Unchanged file.
+          if (!ranges || ranges.length === 0) {
+            file.messages = []
+            return next()
+          }
 
-        file.messages = file.messages.filter((message) =>
-          ranges.some(
-            (range) => message.line >= range[0] && message.line <= range[1]
+          file.messages = file.messages.filter((message) =>
+            ranges.some(
+              (range) => message.line >= range[0] && message.line <= range[1]
+            )
           )
-        )
 
-        next()
-      }
+          next()
+        })
     }
   }
-}
-
-function parse(data) {
-  var lines = data.lines
-  var line = lines[0]
-  var re = /^@@ -(\d+),?(\d+)? \+(\d+),?(\d+)? @@/
-  var match = line.match(re)
-  var result = {path: data.bPath}
-  var ranges = []
-  var start
-  var index
-  var length
-  var position
-  var no
-
-  // Should not happen, maybe if Git returns weird diffs?
-  /* c8 ignore next 3 */
-  if (!match) {
-    return
-  }
-
-  index = 0
-  length = lines.length
-  start = parseInt(match[3], 10) - 1
-  result.ranges = ranges
-
-  while (++index < length) {
-    line = lines[index]
-
-    if (line.charAt(0) !== '+') {
-      position = null
-      continue
-    }
-
-    no = start + index
-
-    if (position === null || position === undefined) {
-      position = ranges.length
-      ranges.push([no, no])
-    } else {
-      ranges[position][1] = no
-    }
-  }
-
-  return result
 }
