@@ -1,12 +1,10 @@
-'use strict'
-
-var cp = require('child_process')
-var path = require('path')
-var promisify = require('util').promisify
-var test = require('tape')
-var rimraf = promisify(require('rimraf'))
-var vfile = require('to-vfile')
-var processor = require('./processor.js')()
+import cp from 'child_process'
+import {promises as fsPromises} from 'fs'
+import path from 'path'
+import {promisify} from 'util'
+import test from 'tape'
+import vfile from 'to-vfile'
+import {processor} from './processor.js'
 
 var exec = promisify(cp.exec)
 
@@ -45,7 +43,7 @@ test('diff() (travis)', function (t) {
     .then(() => exec('git config --global user.email').catch(setEmailAndName))
     // Add initial file.
     .then(() =>
-      processor.process(vfile({path: 'example.txt', contents: stepOne}))
+      processor().process(vfile({path: 'example.txt', contents: stepOne}))
     )
     .then((file) => {
       t.deepEqual(
@@ -70,7 +68,9 @@ test('diff() (travis)', function (t) {
     .then((result) => {
       final = result.stdout.trim()
       process.env.TRAVIS_COMMIT_RANGE = [initial, final].join('...')
-      return processor.process(vfile({path: 'example.txt', contents: stepTwo}))
+      return processor().process(
+        vfile({path: 'example.txt', contents: stepTwo})
+      )
     })
     .then((file) => {
       t.deepEqual(
@@ -81,7 +81,7 @@ test('diff() (travis)', function (t) {
     })
     // Again!
     .then(() =>
-      processor.process(vfile({path: 'example.txt', contents: stepTwo}))
+      processor().process(vfile({path: 'example.txt', contents: stepTwo}))
     )
     .then((file) => {
       t.deepEqual(
@@ -92,7 +92,7 @@ test('diff() (travis)', function (t) {
     })
     // Unstaged files.
     .then(() =>
-      processor.process(vfile({path: 'missing.txt', contents: other}))
+      processor().process(vfile({path: 'missing.txt', contents: other}))
     )
     .then((file) => {
       t.deepEqual(
@@ -112,7 +112,7 @@ test('diff() (travis)', function (t) {
 
       process.env.TRAVIS_COMMIT_RANGE = [initial, final].join('...')
 
-      return processor.process(
+      return processor().process(
         vfile({path: 'example.txt', contents: stepThree})
       )
     })
@@ -123,7 +123,7 @@ test('diff() (travis)', function (t) {
         'should deal with multiple patches'
       )
 
-      return processor.process(vfile({path: 'new.txt', contents: other}))
+      return processor().process(vfile({path: 'new.txt', contents: other}))
     })
     .then((file) => {
       t.deepEqual(
@@ -132,7 +132,7 @@ test('diff() (travis)', function (t) {
         'should deal with new files'
       )
 
-      return processor.process(vfile({path: 'new.txt', contents: other}))
+      return processor().process(vfile({path: 'new.txt', contents: other}))
     })
     // Restore
     .then(restore, restore)
@@ -143,9 +143,10 @@ test('diff() (travis)', function (t) {
 
   function restore() {
     delete process.env.TRAVIS_COMMIT_RANGE
-    return rimraf('.git')
-      .then(() => rimraf('new.txt'))
-      .then(() => rimraf('example.txt'))
+    return fsPromises
+      .rm('.git', {recursive: true})
+      .then(() => fsPromises.rm('new.txt'))
+      .then(() => fsPromises.rm('example.txt'))
   }
 })
 
@@ -175,7 +176,9 @@ test('diff() (GitHub Actions)', function (t) {
     .then(() => exec('git rev-parse HEAD'))
     .then((result) => {
       process.env.GITHUB_SHA = result.stdout.trim()
-      return processor.process(vfile({path: 'example.txt', contents: stepTwo}))
+      return processor().process(
+        vfile({path: 'example.txt', contents: stepTwo})
+      )
     })
     .then((file) => {
       t.deepEqual(
@@ -202,7 +205,9 @@ test('diff() (GitHub Actions)', function (t) {
       process.env.GITHUB_SHA = result.stdout.trim()
       process.env.GITHUB_BASE_REF = 'refs/heads/' + main
       process.env.GITHUB_HEAD_REF = 'refs/heads/other-branch'
-      return processor.process(vfile({path: 'example.txt', contents: stepFour}))
+      return processor().process(
+        vfile({path: 'example.txt', contents: stepFour})
+      )
     })
     .then((file) => {
       t.deepEqual(
@@ -222,7 +227,9 @@ test('diff() (GitHub Actions)', function (t) {
     delete process.env.GITHUB_SHA
     delete process.env.GITHUB_BASE_REF
     delete process.env.GITHUB_HEAD_REF
-    return rimraf('.git').then(() => rimraf('example.txt'))
+    return fsPromises
+      .rm('.git', {recursive: true})
+      .then(() => fsPromises.rm('example.txt'))
   }
 })
 

@@ -1,16 +1,12 @@
-'use strict'
-
-var path = require('path')
-var gitDiffTree = require('git-diff-tree')
-var findUp = require('vfile-find-up')
-
-module.exports = diff
+import path from 'path'
+import gitDiffTree from 'git-diff-tree'
+import findUp from 'vfile-find-up'
 
 var own = {}.hasOwnProperty
 
 var previousRange
 
-function diff() {
+export default function diff() {
   var cache = {}
 
   return transform
@@ -48,6 +44,7 @@ function diff() {
       previousRange = commitRange
     }
 
+    /* c8 ignore next 3 */
     if (own.call(cache, base)) {
       tick(cache[base])
     } else {
@@ -55,12 +52,14 @@ function diff() {
     }
 
     function ongit(error, git) {
-      /* istanbul ignore if - Never happens */
+      // Never happens.
+      /* c8 ignore next 3 */
       if (error) {
         return next(error)
       }
 
-      /* istanbul ignore if - Not testable in a Git repo… */
+      // Not testable in a Git repo…
+      /* c8 ignore next 3 */
       if (!git) {
         return next(new Error('Not in a git repository'))
       }
@@ -85,7 +84,8 @@ function diff() {
         if (info) {
           fp = path.resolve(root, info.path)
 
-          /* istanbul ignore else - long diffs. */
+          // Long diffs.
+          /* c8 ignore next 3 */
           if (!(fp in diffs)) {
             diffs[fp] = []
           }
@@ -133,7 +133,8 @@ function parse(data) {
   var position
   var no
 
-  /* istanbul ignore if - Should not happen, maybe if Git returns weird diffs? */
+  // Should not happen, maybe if Git returns weird diffs?
+  /* c8 ignore next 3 */
   if (!match) {
     return
   }

@@ -1,11 +1,9 @@
-'use strict'
+import retext from 'retext'
+import visit from 'unist-util-visit'
+import toString from 'nlcst-to-string'
+import unifiedDiff from '../index.js'
 
-var retext = require('retext')
-var visit = require('unist-util-visit')
-var toString = require('nlcst-to-string')
-var diff = require('..')
-
-module.exports = retext().use(lorem).use(diff).freeze()
+export const processor = retext().use(lorem).use(unifiedDiff).freeze()
 
 function lorem() {
   return transformer

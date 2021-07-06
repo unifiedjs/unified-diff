@@ -24,6 +24,9 @@ When run outside supported CIs this plugin doesn’t do anything.
 
 ## Install
 
+This package is [ESM only](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c):
+Node 12+ is needed to use it and it must be `import`ed instead of `require`d.
+
 [npm][]:
 
 ```sh
@@ -123,7 +126,9 @@ an error, but it’s unrelated to the PR.
 
 ## API
 
-### `processor.use(diff)`
+This package exports a plugin as the default export.
+
+### `unified().use(diff)`
 
 Ignore messages emitted by plugins before `diff` for lines that did not change.
 
@@ -132,7 +137,7 @@ If there’s a `TRAVIS_COMMIT_RANGE`, `GITHUB_BASE_REF` and `GITHUB_HEAD_REF`, o
 `GITHUB_SHA` environment variable, then this plugin runs, otherwise it does
 nothing.
 
-###### TODO
+###### To do
 
 *   [ ] Add support for other CIs (ping if you want to work on this)
 *   [ ] Add non-CI support (I’m not yet sure how though)

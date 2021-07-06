@@ -25,6 +25,9 @@
   "contributors": [
     "Titus Wormer <tituswormer@gmail.com> (https://wooorm.com)"
   ],
+  "sideEffects": false,
+  "type": "module",
+  "main": "index.js",
   "files": [
     "index.js"
   ],
@@ -33,8 +36,8 @@
     "vfile-find-up": "^5.0.0"
   },
   "devDependencies": {
+    "c8": "^7.0.0",
     "nlcst-to-string": "^2.0.0",
-    "nyc": "^15.0.0",
     "prettier": "^2.0.0",
     "remark-cli": "^9.0.0",
     "remark-preset-wooorm": "^8.0.0",
@@ -43,19 +46,13 @@
     "tape": "^5.0.0",
     "to-vfile": "^6.0.0",
     "unist-util-visit": "^2.0.0",
-    "xo": "^0.38.0"
+    "xo": "^0.39.0"
   },
   "scripts": {
     "format": "remark . -qfo && prettier . -w --loglevel warn && xo --fix",
-    "test-api": "node test",
-    "test-coverage": "nyc --reporter lcov tape test/index.js",
+    "test-api": "node --conditions development test/index.js",
+    "test-coverage": "c8 --check-coverage --branches 100 --functions 100 --lines 100 --statements 100 --reporter lcov node --conditions development test/index.js",
     "test": "npm run format && npm run test-coverage"
-  },
-  "nyc": {
-    "check-coverage": true,
-    "lines": 100,
-    "functions": 100,
-    "branches": 100
   },
   "prettier": {
     "tabWidth": 2,
@@ -67,8 +64,9 @@
   },
   "xo": {
     "prettier": true,
-    "esnext": false,
     "rules": {
+      "no-var": "off",
+      "prefer-arrow-callback": "off",
       "unicorn/prefer-number-properties": "off",
       "unicorn/no-fn-reference-in-iterator": "off",
       "unicorn/string-content": "off"
