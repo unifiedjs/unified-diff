@@ -58,28 +58,33 @@ index 360b225..5a96b86 100644
 We have some natural language checking in `lint.js`:
 
 ```js
-var diff = require('unified-diff')
-var vfile = require('to-vfile')
-var unified = require('unified')
-var markdown = require('remark-parse')
-var stringify = require('remark-stringify')
-var remark2retext = require('remark-retext')
-var english = require('retext-english')
-var repetition = require('retext-repeated-words')
-var article = require('retext-indefinite-article')
-var report = require('vfile-reporter')
+import {toVFile} from 'to-vfile'
+import {reporter} from 'vfile-reporter'
+import {unified} from 'unified'
+import unifiedDiff from 'unifiedDiff'
+import remarkParse from 'remark-parse'
+import remarkStringify from 'remark-stringify'
+import remarkRetext from 'remark-retext'
+import retextEnglish from 'retext-english'
+import retextRepeatedWords from 'retext-repeated-words'
+import retextIndefiniteArticle from 'retext-indefinite-article'
 
-vfile.read('readme.md', function (err, file) {
-  if (err) throw err
-
+toVFile.read('readme.md').then((file) => {
   unified()
-    .use(markdown)
-    .use(remark2retext, unified().use(english).use(repetition).use(article))
-    .use(stringify)
-    .use(diff)
-    .process(file, function (err) {
-      console.error(report(err || file))
-      process.exit(err || file.messages.length ? 1 : 0)
+    .use(remarkParse)
+    .use(
+      remarkRetext,
+      unified()
+        .use(retextEnglish)
+        .use(retextRepeatedWords)
+        .use(retextIndefiniteArticle)
+    )
+    .use(remarkStringify)
+    .use(unifiedDiff)
+    .process(file)
+    .then((file) => {
+      console.error(reporter(file))
+      process.exit(file.messages.length > 0 ? 1 : 0)
     })
 })
 ```
