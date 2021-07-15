@@ -1,10 +1,11 @@
 import cp from 'child_process'
-import {promises as fsPromises} from 'fs'
+import fs from 'fs'
 import path from 'path'
 import {promisify} from 'util'
 import test from 'tape'
 import {toVFile} from 'to-vfile'
 import {processor} from './processor.js'
+import rimraf from 'rimraf'
 
 const exec = promisify(cp.exec)
 
@@ -23,6 +24,16 @@ const current = process.cwd()
 
 process.chdir(path.join(current, 'test'))
 
+process.on('exit', async () => {
+  process.env.TRAVIS_COMMIT_RANGE = range
+  process.env.GITHUB_SHA = sha
+  process.env.GITHUB_BASE_REF = base
+  process.env.GITHUB_HEAD_REF = head
+  process.chdir(path.join(current))
+  fs.rmSync(path.join('test', '.git'), {recursive: true, force: true})
+  fs.rmSync(path.join('test', 'example.txt'))
+})
+
 test('diff() (travis)', async (t) => {
   const stepOne = [
     'Lorem ipsum dolor sit amet.',
@@ -37,6 +48,7 @@ test('diff() (travis)', async (t) => {
   t.plan(7)
 
   await exec('git init')
+
   // Set up.
   try {
     await exec('git config --global user.email')
@@ -135,11 +147,9 @@ test('diff() (travis)', async (t) => {
   t.pass('should pass')
 
   delete process.env.TRAVIS_COMMIT_RANGE
-  await Promise.allSettled([
-    fsPromises.rm('.git', {recursive: true, force: true}),
-    fsPromises.rm('new.txt'),
-    fsPromises.rm('example.txt')
-  ])
+  rimraf.sync('.git')
+  rimraf.sync('new.txt')
+  rimraf.sync('example.txt')
 })
 
 test('diff() (GitHub Actions)', async (t) => {
@@ -213,16 +223,6 @@ test('diff() (GitHub Actions)', async (t) => {
   delete process.env.GITHUB_SHA
   delete process.env.GITHUB_BASE_REF
   delete process.env.GITHUB_HEAD_REF
-  await Promise.allSettled([
-    fsPromises.rm('.git', {recursive: true, force: true}),
-    fsPromises.rm('example.txt')
-  ])
-})
-
-process.on('exit', () => {
-  process.env.TRAVIS_COMMIT_RANGE = range
-  process.env.GITHUB_SHA = sha
-  process.env.GITHUB_BASE_REF = base
-  process.env.GITHUB_HEAD_REF = head
-  process.chdir(path.join(current))
+  rimraf.sync('.git')
+  rimraf.sync('example.txt')
 })
