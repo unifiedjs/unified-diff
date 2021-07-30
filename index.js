@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 // @ts-expect-error: hush
 import gitDiffTree from 'git-diff-tree'
 import {findUpOne} from 'vfile-find-up'

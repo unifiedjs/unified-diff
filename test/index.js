@@ -1,11 +1,11 @@
-import cp from 'child_process'
-import fs from 'fs'
-import path from 'path'
-import {promisify} from 'util'
+import cp from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import {promisify} from 'node:util'
 import test from 'tape'
 import {toVFile} from 'to-vfile'
-import {processor} from './processor.js'
 import rimraf from 'rimraf'
+import {processor} from './processor.js'
 
 const exec = promisify(cp.exec)
 
