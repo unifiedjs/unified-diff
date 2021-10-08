@@ -61,7 +61,7 @@ We have some natural language checking in `lint.js`:
 import {toVFile} from 'to-vfile'
 import {reporter} from 'vfile-reporter'
 import {unified} from 'unified'
-import unifiedDiff from 'unifiedDiff'
+import unifiedDiff from 'unified-diff'
 import remarkParse from 'remark-parse'
 import remarkStringify from 'remark-stringify'
 import remarkRetext from 'remark-retext'
