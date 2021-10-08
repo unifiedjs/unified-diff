@@ -1,3 +1,4 @@
+import process from 'node:process'
 import path from 'node:path'
 // @ts-expect-error: hush
 import gitDiffTree from 'git-diff-tree'
@@ -66,8 +67,10 @@ export default function diff() {
         if (error) return next(error)
 
         // Not testable in a Git repo…
-        /* c8 ignore next */
-        if (!git) return next(new Error('Not in a git repository'))
+        /* c8 ignore next 3 */
+        if (!git || !git.dirname) {
+          return next(new Error('Not in a git repository'))
+        }
 
         cache[base] = git.dirname
         tick(git.dirname)
