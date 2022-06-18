@@ -18,7 +18,7 @@ export default function diff() {
     const base = file.dirname
     /** @type {string|undefined} */
     let commitRange
-    /** @type {string[]|undefined} */
+    /** @type {Array<string>|undefined} */
     let range
 
     // Looks like Travis.
@@ -81,7 +81,7 @@ export default function diff() {
      * @param {string} root
      */
     function tick(root) {
-      /** @type {Record<string, [number, number][]>} */
+      /** @type {Record<string, Array<[number, number]>>} */
       const diffs = {}
 
       gitDiffTree(path.join(root, '.git'), {
@@ -108,7 +108,7 @@ export default function diff() {
             /* c8 ignore next */
             if (!match) return
 
-            /** @type {[number, number][]} */
+            /** @type {Array<[number, number]>} */
             const ranges = []
             const start = Number.parseInt(match[3], 10) - 1
             let index = 0

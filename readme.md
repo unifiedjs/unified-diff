@@ -7,58 +7,79 @@
 [![Backers][backers-badge]][collective]
 [![Chat][chat-badge]][chat]
 
-[**unified**][unified] plugin to ignore unrelated messages.
-Currently works in PRs on Travis and GitHub Actions.
+**[unified][]** plugin to ignore unrelated messages in GitHub Actions and
+Travis.
 
-When working with natural language, having tools that check cumbersome tasks
-can be very useful (think [alex][] or [retext][] plugins).
-However, natural language isn’t as strict as code.
-Integrating natural language checking in a CI often doesn’t work well due to
-false positives.
-It’s possible to add a long list of exceptions, but this soon becomes
-unmanageable.
+## Contents
 
-This plugin solves that problem, when in CIs, by ignoring any messages on
-unchanged lines.
-When run outside supported CIs this plugin doesn’t do anything.
+*   [What is this?](#what-is-this)
+*   [When should I use this?](#when-should-i-use-this)
+*   [Install](#install)
+*   [Use](#use)
+*   [API](#api)
+    *   [`unified().use(unifiedDiff)`](#unifieduseunifieddiff)
+*   [Types](#types)
+*   [Compatibility](#compatibility)
+*   [Contribute](#contribute)
+*   [License](#license)
+
+## What is this?
+
+This package is a [unified][] plugin to ignore unrelated lint messages in a CI.
+
+**unified** is a project that transforms content with abstract syntax trees
+(ASTs).
+**vfile** is the virtual file interface used in unified which manages messages.
+This is a unified plugin that filters messages on the vfile.
+
+## When should I use this?
+
+You can use this plugin when you are dealing with a large, existing project.
+
+Using tools that check whether things follow a style guide is typically very
+useful.
+However, it can be hard to start using something in a large existing project.
+This plugin helps, because it ignores messages that occur in lines that are not
+touched by a PR in a CI.
+When this plugin is used outside of a supported CIs, it doesn’t do anything.
 
 ## Install
 
-This package is [ESM only](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c):
-Node 12+ is needed to use it and it must be `import`ed instead of `require`d.
-
-[npm][]:
+This package is [ESM only][esm].
+In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
 
 ```sh
 npm install unified-diff
 ```
 
+In Deno with [`esm.sh`][esmsh]:
+
+```js
+import unifiedDiff from 'https://esm.sh/unified-diff@4'
+```
+
+In browsers with [`esm.sh`][esmsh]:
+
+```html
+<script type="module">
+  import unifiedDiff from 'https://esm.sh/unified-diff@4?bundle'
+</script>
+```
+
 ## Use
 
-Say we have this `readme.md`.
-Note the `an an`.
+Say our document `example.md` contains:
 
 ```markdown
 This is an an example.
 ```
 
-Then, someone creates a PR which adds the following diff:
+> 👉 **Note**: `an an` is a typo.
 
-```diff
-diff --git a/readme.md b/readme.md
-index 360b225..5a96b86 100644
---- a/readme.md
-+++ b/readme.md
-@@ -1 +1,3 @@
- This is an an example.
-+
-+Some more more text. A error.
-```
-
-We have some natural language checking in `lint.js`:
+…and our module `example.js` looks as follows:
 
 ```js
-import {toVFile} from 'to-vfile'
+import {read} from 'to-vfile'
 import {reporter} from 'vfile-reporter'
 import {unified} from 'unified'
 import unifiedDiff from 'unified-diff'
@@ -69,57 +90,70 @@ import retextEnglish from 'retext-english'
 import retextRepeatedWords from 'retext-repeated-words'
 import retextIndefiniteArticle from 'retext-indefinite-article'
 
-toVFile.read('readme.md').then((file) => {
-  unified()
-    .use(remarkParse)
-    .use(
-      remarkRetext,
-      unified()
-        .use(retextEnglish)
-        .use(retextRepeatedWords)
-        .use(retextIndefiniteArticle)
-    )
-    .use(remarkStringify)
-    .use(unifiedDiff)
-    .process(file)
-    .then((file) => {
-      console.error(reporter(file))
-      process.exit(file.messages.length > 0 ? 1 : 0)
-    })
-})
+const file = unified()
+  .use(remarkParse)
+  .use(
+    remarkRetext,
+    unified()
+      .use(retextEnglish)
+      .use(retextRepeatedWords)
+      .use(retextIndefiniteArticle)
+  )
+  .use(remarkStringify)
+  .use(unifiedDiff)
+  .process(await read('example.md'))
+
+console.error(reporter(file))
+process.exit(file.messages.length > 0 ? 1 : 0)
 ```
 
-`lint.js` is hooked up to run on Travis in `.travis.yml` like so:
+…and our Travis configuration `.travis.yml` contains:
 
 ```yml
-# ...
+# …
 script:
 - npm test
-- node lint.js
-# ...
+- node example.js
+# …
 ```
 
-(or in an equivalent GH Actions workflow file)
+> 👉 **Note**: an equivalent GH Actions workflow file is also supported.
+
+Then, say someone creates a PR which adds the following diff:
+
+```diff
+diff --git a/example.md b/example.md
+index 360b225..5a96b86 100644
+--- a/example.md
++++ b/example.md
+@@ -1 +1,3 @@
+ This is an an example.
++
++Some more more text. A error.
+```
+
+> 👉 **Note**: `more more` and `A` before `error` are typos.
 
 When run in CI, we’ll see the following printed on **stderr**(4).
-Note that `an an` on L1 is not included because it’s unrelated to this PR.
 
 ```txt
-readme.md
+example.md
    3:6-3:15  warning  Expected `more` once, not twice   retext-repeated-words      retext-repeated-words
   3:22-3:23  warning  Use `An` before `error`, not `A`  retext-indefinite-article  retext-indefinite-article
 
 ⚠ 2 warnings
 ```
 
-As there are messages, the build exits with `1`, thus failing CI.
+> 👉 **Note**: `an an` on L1 is not included because it’s unrelated to this PR.
+
+The build exits with `1` as there are messages, thus failing CI.
 The user sees this and amends the PR to the following:
 
 ```diff
-diff --git a/readme.md b/readme.md
+diff --git a/example.md b/example.md
 index 360b225..5a96b86 100644
---- a/readme.md
-+++ b/readme.md
+--- a/example.md
++++ b/example.md
 @@ -1 +1,3 @@
  This is an an example.
 +
@@ -131,11 +165,12 @@ an error, but it’s unrelated to the PR.
 
 ## API
 
-This package exports a plugin as the default export.
+This package exports no identifiers.
+The default export is `unifiedDiff`.
 
-### `unified().use(diff)`
+### `unified().use(unifiedDiff)`
 
-Ignore messages emitted by plugins before `diff` for lines that did not change.
+Ignore unrelated messages in GitHub Actions and Travis.
 
 There are no options.
 If there’s a `TRAVIS_COMMIT_RANGE`, `GITHUB_BASE_REF` and `GITHUB_HEAD_REF`, or
@@ -145,9 +180,21 @@ nothing.
 ###### To do
 
 *   [ ] Add support for other CIs (ping if you want to work on this)
-*   [ ] Add non-CI support (I’m not yet sure how though)
+*   [ ] Add non-CI support (I’m not sure how though)
 
 PRs welcome!
+
+## Types
+
+This package is fully typed with [TypeScript][].
+There are no additional exported types.
+
+## Compatibility
+
+Projects maintained by the unified collective are compatible with all maintained
+versions of Node.js.
+As of now, that is Node.js 12.20+, 14.14+, 16.0+, and 18.0+.
+Our projects sometimes work with older versions, but this is not guaranteed.
 
 ## Contribute
 
@@ -189,20 +236,22 @@ abide by its terms.
 
 [npm]: https://docs.npmjs.com/cli/install
 
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+[esmsh]: https://esm.sh
+
+[typescript]: https://www.typescriptlang.org
+
 [health]: https://github.com/unifiedjs/.github
 
-[contributing]: https://github.com/unifiedjs/.github/blob/HEAD/contributing.md
+[contributing]: https://github.com/unifiedjs/.github/blob/main/contributing.md
 
-[support]: https://github.com/unifiedjs/.github/blob/HEAD/support.md
+[support]: https://github.com/unifiedjs/.github/blob/main/support.md
 
-[coc]: https://github.com/unifiedjs/.github/blob/HEAD/code-of-conduct.md
+[coc]: https://github.com/unifiedjs/.github/blob/main/code-of-conduct.md
 
 [license]: license
 
 [author]: https://wooorm.com
 
 [unified]: https://github.com/unifiedjs/unified
-
-[alex]: https://github.com/wooorm/alex
-
-[retext]: https://github.com/retextjs/retext/blob/HEAD/doc/plugins.md#list-of-plugins
