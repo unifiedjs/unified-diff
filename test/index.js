@@ -64,7 +64,7 @@ test('diff() (travis)', async (t) => {
   )
 
   t.deepEqual(
-    fileOne.messages.map((m) => String(m)),
+    fileOne.messages.map(String),
     ['example.txt:1:1-1:6: No lorem!', 'example.txt:3:1-3:6: No lorem!'],
     'should set messages'
   )
@@ -89,7 +89,7 @@ test('diff() (travis)', async (t) => {
   )
 
   t.deepEqual(
-    fileTwo.messages.map((m) => String(m)),
+    fileTwo.messages.map(String),
     ['example.txt:5:1-5:6: No lorem!'],
     'should show only messages for changed lines'
   )
@@ -100,7 +100,7 @@ test('diff() (travis)', async (t) => {
   )
 
   t.deepEqual(
-    fileAgain.messages.map((m) => String(m)),
+    fileAgain.messages.map(String),
     ['example.txt:5:1-5:6: No lorem!'],
     'should not recheck (coverage for optimisations)'
   )
@@ -111,7 +111,7 @@ test('diff() (travis)', async (t) => {
   )
 
   t.deepEqual(
-    fileMissing.messages.map((m) => String(m)),
+    fileMissing.messages.map(String),
     [],
     'should ignore unstaged files'
   )
@@ -130,7 +130,7 @@ test('diff() (travis)', async (t) => {
   )
 
   t.deepEqual(
-    fileNew.messages.map((m) => String(m)),
+    fileNew.messages.map(String),
     ['example.txt:1:1-1:6: No lorem!', 'example.txt:6:1-6:6: No lorem!'],
     'should deal with multiple patches'
   )
@@ -140,7 +140,7 @@ test('diff() (travis)', async (t) => {
   )
 
   t.deepEqual(
-    fileNewTwo.messages.map((m) => String(m)),
+    fileNewTwo.messages.map(String),
     ['new.txt:1:1-1:6: No lorem!'],
     'should deal with new files'
   )
@@ -185,7 +185,7 @@ test('diff() (GitHub Actions)', async (t) => {
   )
 
   t.deepEqual(
-    fileInitial.messages.map((m) => String(m)),
+    fileInitial.messages.map(String),
     ['example.txt:5:1-5:6: No lorem!'],
     'should show only messages for this commit'
   )
@@ -214,7 +214,7 @@ test('diff() (GitHub Actions)', async (t) => {
   )
 
   t.deepEqual(
-    fileFour.messages.map((m) => String(m)),
+    fileFour.messages.map(String),
     ['example.txt:1:1-1:6: No lorem!', 'example.txt:9:7-9:12: No lorem!'],
     'should deal with PRs'
   )
