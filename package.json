@@ -1,6 +1,6 @@
 {
   "name": "unified-diff",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "description": "unified plugin to ignore unrelated messages",
   "license": "MIT",
   "keywords": [

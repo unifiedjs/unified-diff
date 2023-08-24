@@ -55,14 +55,14 @@ npm install unified-diff
 In Deno with [`esm.sh`][esmsh]:
 
 ```js
-import unifiedDiff from 'https://esm.sh/unified-diff@4'
+import unifiedDiff from 'https://esm.sh/unified-diff@5'
 ```
 
 In browsers with [`esm.sh`][esmsh]:
 
 ```html
 <script type="module">
-  import unifiedDiff from 'https://esm.sh/unified-diff@4?bundle'
+  import unifiedDiff from 'https://esm.sh/unified-diff@5?bundle'
 </script>
 ```
 
