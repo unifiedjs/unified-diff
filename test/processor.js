@@ -5,8 +5,8 @@
 import {toString} from 'nlcst-to-string'
 import {ParseEnglish} from 'parse-english'
 import {unified} from 'unified'
+import unifiedDiff from 'unified-diff'
 import {visit} from 'unist-util-visit'
-import unifiedDiff from '../index.js'
 
 // To do: use `retext-english`, `retext-stringify` when they are released.
 // import retextEnglish from 'retext-english'
