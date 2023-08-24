@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {promisify} from 'node:util'
 import test from 'tape'
-import {toVFile} from 'to-vfile'
+import {toVFile, write} from 'to-vfile'
 import rimraf from 'rimraf'
 import {processor} from './processor.js'
 
@@ -69,7 +69,7 @@ test('diff() (travis)', async (t) => {
     'should set messages'
   )
 
-  await toVFile.write(fileOne)
+  await write(fileOne)
 
   await exec('git add example.txt')
   await exec('git commit -m one')
@@ -77,7 +77,7 @@ test('diff() (travis)', async (t) => {
   const initial = resultInitial.stdout.trim()
 
   // Change files.
-  await toVFile.write({path: 'example.txt', value: stepTwo})
+  await write({path: 'example.txt', value: stepTwo})
   await exec('git add example.txt')
   await exec('git commit -m two')
   const resultFinal = await exec('git rev-parse HEAD')
@@ -117,8 +117,8 @@ test('diff() (travis)', async (t) => {
   )
 
   // New file.
-  await toVFile.write({path: 'example.txt', value: stepThree})
-  await toVFile.write({path: 'new.txt', value: other})
+  await write({path: 'example.txt', value: stepThree})
+  await write({path: 'new.txt', value: other})
   await exec('git add example.txt new.txt')
   await exec('git commit -m three')
   const resultNew = await exec('git rev-parse HEAD')
@@ -168,12 +168,12 @@ test('diff() (GitHub Actions)', async (t) => {
 
   await exec('git init')
   // Add initial file.
-  await toVFile.write({path: 'example.txt', value: stepOne})
+  await write({path: 'example.txt', value: stepOne})
   await exec('git add example.txt')
   await exec('git commit -m one')
 
   // Change file.
-  await toVFile.write({path: 'example.txt', value: stepTwo})
+  await write({path: 'example.txt', value: stepTwo})
   await exec('git add example.txt')
   await exec('git commit -m two')
   const resultInitial = await exec('git rev-parse HEAD')
@@ -197,10 +197,10 @@ test('diff() (GitHub Actions)', async (t) => {
   await exec('git checkout -b other-branch')
 
   // Change file.
-  await toVFile.write({path: 'example.txt', value: stepThree})
+  await write({path: 'example.txt', value: stepThree})
   await exec('git add example.txt')
   await exec('git commit -m three')
-  await toVFile.write({path: 'example.txt', value: stepFour})
+  await write({path: 'example.txt', value: stepFour})
   await exec('git add example.txt')
   await exec('git commit -m four')
   const final = await exec('git rev-parse HEAD')

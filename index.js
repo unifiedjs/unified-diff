@@ -2,7 +2,7 @@ import process from 'node:process'
 import path from 'node:path'
 // @ts-expect-error: hush
 import gitDiffTree from 'git-diff-tree'
-import {findUpOne} from 'vfile-find-up'
+import {findUp} from 'vfile-find-up'
 
 const own = {}.hasOwnProperty
 
@@ -61,7 +61,7 @@ export default function diff() {
     if (own.call(cache, base)) {
       tick(cache[base])
     } else {
-      findUpOne('.git', file.dirname, (error, git) => {
+      findUp('.git', file.dirname, (error, git) => {
         // Never happens.
         /* c8 ignore next */
         if (error) return next(error)
