@@ -104,7 +104,7 @@ const file = unified()
   .process(await read('example.md'))
 
 console.error(reporter(file))
-process.exit(file.messages.length > 0 ? 1 : 0)
+process.exitCode = file.messages.length > 0 ? 1 : 0
 ```
 
 …and our Travis configuration `.travis.yml` contains:

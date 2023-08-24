@@ -1,14 +1,15 @@
-import process from 'node:process'
-import cp from 'node:child_process'
-import fs from 'node:fs'
+import assert from 'node:assert/strict'
+import childProcess from 'node:child_process'
+import fsDefault, {promises as fs} from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
+import test from 'node:test'
 import {promisify} from 'node:util'
-import test from 'tape'
-import {toVFile, write} from 'to-vfile'
-import rimraf from 'rimraf'
+import {write} from 'to-vfile'
+import {VFile} from 'vfile'
 import {processor} from './processor.js'
 
-const exec = promisify(cp.exec)
+const exec = promisify(childProcess.exec)
 
 const range = process.env.TRAVIS_COMMIT_RANGE
 const sha = process.env.GITHUB_SHA
@@ -25,17 +26,29 @@ const current = process.cwd()
 
 process.chdir(path.join(current, 'test'))
 
-process.on('exit', async () => {
+process.on('exit', function () {
+  // Has to be sync.
+  fsDefault.rmSync(new URL('.git', import.meta.url), {
+    force: true,
+    recursive: true
+  })
+  fsDefault.rmSync(new URL('example.txt', import.meta.url), {force: true})
   process.env.TRAVIS_COMMIT_RANGE = range
   process.env.GITHUB_SHA = sha
   process.env.GITHUB_BASE_REF = base
   process.env.GITHUB_HEAD_REF = head
   process.chdir(path.join(current))
-  fs.rmSync(path.join('test', '.git'), {recursive: true, force: true})
-  fs.rmSync(path.join('test', 'example.txt'))
 })
 
-test('diff() (travis)', async (t) => {
+test('unifiedDiff', async function (t) {
+  await t.test('should expose the public api', async function () {
+    assert.deepEqual(Object.keys(await import('../index.js')).sort(), [
+      'default'
+    ])
+  })
+})
+
+test('unifiedDiff (travis)', async function (t) {
   const stepOne = [
     'Lorem ipsum dolor sit amet.',
     '',
@@ -45,8 +58,6 @@ test('diff() (travis)', async (t) => {
   const stepTwo = stepOne + '\nLorem ipsum.'
   const stepThree = 'Lorem.\n' + stepOne + '\nLorem.'
   const other = 'Lorem ipsum.'
-
-  t.plan(7)
 
   await exec('git init')
 
@@ -59,15 +70,16 @@ test('diff() (travis)', async (t) => {
   }
 
   // Add initial file.
-  const fileOne = await processor().process(
-    toVFile({path: 'example.txt', value: stepOne})
-  )
+  const fileOne = new VFile({path: 'example.txt', value: stepOne})
 
-  t.deepEqual(
-    fileOne.messages.map(String),
-    ['example.txt:1:1-1:6: No lorem!', 'example.txt:3:1-3:6: No lorem!'],
-    'should set messages'
-  )
+  await processor().process(fileOne)
+
+  await t.test('should show messages if not on disk', async function () {
+    assert.deepEqual(fileOne.messages.map(String), [
+      'example.txt:1:1-1:6: No lorem!',
+      'example.txt:3:1-3:6: No lorem!'
+    ])
+  })
 
   await write(fileOne)
 
@@ -81,40 +93,44 @@ test('diff() (travis)', async (t) => {
   await exec('git add example.txt')
   await exec('git commit -m two')
   const resultFinal = await exec('git rev-parse HEAD')
-
   const final = resultFinal.stdout.trim()
   process.env.TRAVIS_COMMIT_RANGE = [initial, final].join('...')
+
   const fileTwo = await processor().process(
-    toVFile({path: 'example.txt', value: stepTwo})
+    new VFile({path: 'example.txt', value: stepTwo})
   )
 
-  t.deepEqual(
-    fileTwo.messages.map(String),
-    ['example.txt:5:1-5:6: No lorem!'],
-    'should show only messages for changed lines'
+  await t.test(
+    'should show only messages for changed lines',
+    async function () {
+      assert.deepEqual(fileTwo.messages.map(String), [
+        'example.txt:5:1-5:6: No lorem!'
+      ])
+    }
   )
 
   // Again!
   const fileAgain = await processor().process(
-    toVFile({path: 'example.txt', value: stepTwo})
+    new VFile({path: 'example.txt', value: stepTwo})
   )
 
-  t.deepEqual(
-    fileAgain.messages.map(String),
-    ['example.txt:5:1-5:6: No lorem!'],
-    'should not recheck (coverage for optimisations)'
+  await t.test(
+    'should not recheck (coverage for optimisations)',
+    async function () {
+      assert.deepEqual(fileAgain.messages.map(String), [
+        'example.txt:5:1-5:6: No lorem!'
+      ])
+    }
   )
 
   // Unstaged files.
   const fileMissing = await processor().process(
-    toVFile({path: 'missing.txt', value: other})
+    new VFile({path: 'missing.txt', value: other})
   )
 
-  t.deepEqual(
-    fileMissing.messages.map(String),
-    [],
-    'should ignore unstaged files'
-  )
+  await t.test('should ignore unstaged files', async function () {
+    assert.deepEqual(fileMissing.messages.map(String), [])
+  })
 
   // New file.
   await write({path: 'example.txt', value: stepThree})
@@ -126,34 +142,36 @@ test('diff() (travis)', async (t) => {
   process.env.TRAVIS_COMMIT_RANGE = initial + '...' + resultNew.stdout.trim()
 
   const fileNew = await processor().process(
-    toVFile({path: 'example.txt', value: stepThree})
+    new VFile({path: 'example.txt', value: stepThree})
   )
 
-  t.deepEqual(
-    fileNew.messages.map(String),
-    ['example.txt:1:1-1:6: No lorem!', 'example.txt:6:1-6:6: No lorem!'],
-    'should deal with multiple patches'
-  )
+  await t.test('should deal with multiple patches', async function () {
+    assert.deepEqual(fileNew.messages.map(String), [
+      'example.txt:1:1-1:6: No lorem!',
+      'example.txt:6:1-6:6: No lorem!'
+    ])
+  })
 
   const fileNewTwo = await processor().process(
-    toVFile({path: 'new.txt', value: other})
+    new VFile({path: 'new.txt', value: other})
   )
 
-  t.deepEqual(
-    fileNewTwo.messages.map(String),
-    ['new.txt:1:1-1:6: No lorem!'],
-    'should deal with new files'
-  )
-
-  t.pass('should pass')
+  await t.test('should deal with new files', async function () {
+    assert.deepEqual(fileNewTwo.messages.map(String), [
+      'new.txt:1:1-1:6: No lorem!'
+    ])
+  })
 
   delete process.env.TRAVIS_COMMIT_RANGE
-  rimraf.sync('.git')
-  rimraf.sync('new.txt')
-  rimraf.sync('example.txt')
+
+  await fs.rm(new URL('.git', import.meta.url), {
+    recursive: true
+  })
+  await fs.rm(new URL('example.txt', import.meta.url))
+  await fs.rm(new URL('new.txt', import.meta.url))
 })
 
-test('diff() (GitHub Actions)', async (t) => {
+test('unifiedDiff (GitHub Actions)', async function (t) {
   const stepOne = [
     'Lorem ipsum dolor sit amet.',
     '',
@@ -163,8 +181,6 @@ test('diff() (GitHub Actions)', async (t) => {
   const stepTwo = stepOne + '\nLorem ipsum.\n'
   const stepThree = 'Lorem.\n\n' + stepOne + '\nAlpha bravo.\n'
   const stepFour = stepThree + '\nIpsum lorem.\n'
-
-  t.plan(3)
 
   await exec('git init')
   // Add initial file.
@@ -181,16 +197,15 @@ test('diff() (GitHub Actions)', async (t) => {
   process.env.GITHUB_SHA = resultInitial.stdout.trim()
 
   const fileInitial = await processor().process(
-    toVFile({path: 'example.txt', value: stepTwo})
+    new VFile({path: 'example.txt', value: stepTwo})
   )
 
-  t.deepEqual(
-    fileInitial.messages.map(String),
-    ['example.txt:5:1-5:6: No lorem!'],
-    'should show only messages for this commit'
-  )
+  await t.test('should show only messages for this commit', async function () {
+    assert.deepEqual(fileInitial.messages.map(String), [
+      'example.txt:5:1-5:6: No lorem!'
+    ])
+  })
 
-  // A PR.
   const resultCurrent = await exec('git branch --show-current')
   const main = resultCurrent.stdout.trim()
 
@@ -210,20 +225,22 @@ test('diff() (GitHub Actions)', async (t) => {
   process.env.GITHUB_HEAD_REF = 'refs/heads/other-branch'
 
   const fileFour = await processor().process(
-    toVFile({path: 'example.txt', value: stepFour})
+    new VFile({path: 'example.txt', value: stepFour})
   )
 
-  t.deepEqual(
-    fileFour.messages.map(String),
-    ['example.txt:1:1-1:6: No lorem!', 'example.txt:9:7-9:12: No lorem!'],
-    'should deal with PRs'
-  )
-
-  t.pass('should pass')
+  await t.test('should deal with PRs', async function () {
+    assert.deepEqual(fileFour.messages.map(String), [
+      'example.txt:1:1-1:6: No lorem!',
+      'example.txt:9:7-9:12: No lorem!'
+    ])
+  })
 
   delete process.env.GITHUB_SHA
   delete process.env.GITHUB_BASE_REF
   delete process.env.GITHUB_HEAD_REF
-  rimraf.sync('.git')
-  rimraf.sync('example.txt')
+
+  await fs.rm(new URL('.git', import.meta.url), {
+    recursive: true
+  })
+  await fs.rm(new URL('example.txt', import.meta.url))
 })

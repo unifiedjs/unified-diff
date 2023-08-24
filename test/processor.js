@@ -2,9 +2,9 @@
  * @typedef {import('nlcst').Root} Root
  */
 
-import {unified} from 'unified'
 import {toString} from 'nlcst-to-string'
 import {ParseEnglish} from 'parse-english'
+import {unified} from 'unified'
 import {visit} from 'unist-util-visit'
 import unifiedDiff from '../index.js'
 
@@ -38,12 +38,20 @@ export const processor = unified()
       }
     }
   )
-  .use(() => (tree, file) => {
-    visit(tree, 'WordNode', (node) => {
-      if (/lorem/i.test(toString(node))) {
-        file.message('No lorem!', node)
-      }
-    })
+  .use(function () {
+    /**
+     * @param {Root} tree
+     *   Tree.
+     * @returns {undefined}
+     *   Nothing.
+     */
+    return function (tree, file) {
+      visit(tree, 'WordNode', function (node) {
+        if (/lorem/i.test(toString(node))) {
+          file.message('No lorem!', node)
+        }
+      })
+    }
   })
   .use(unifiedDiff)
   .freeze()
