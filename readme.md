@@ -46,7 +46,7 @@ When this plugin is used outside of a supported CIs, it doesn’t do anything.
 ## Install
 
 This package is [ESM only][esm].
-In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
+In Node.js (version 16+), install with [npm][]:
 
 ```sh
 npm install unified-diff
@@ -79,18 +79,19 @@ This is an an example.
 …and our module `example.js` looks as follows:
 
 ```js
+import process from 'node:process'
+import remarkParse from 'remark-parse'
+import remarkRetext from 'remark-retext'
+import remarkStringify from 'remark-stringify'
+import retextEnglish from 'retext-english'
+import retextIndefiniteArticle from 'retext-indefinite-article'
+import retextRepeatedWords from 'retext-repeated-words'
 import {read} from 'to-vfile'
-import {reporter} from 'vfile-reporter'
 import {unified} from 'unified'
 import unifiedDiff from 'unified-diff'
-import remarkParse from 'remark-parse'
-import remarkStringify from 'remark-stringify'
-import remarkRetext from 'remark-retext'
-import retextEnglish from 'retext-english'
-import retextRepeatedWords from 'retext-repeated-words'
-import retextIndefiniteArticle from 'retext-indefinite-article'
+import {reporter} from 'vfile-reporter'
 
-const file = unified()
+const file = await unified()
   .use(remarkParse)
   .use(
     remarkRetext,
@@ -166,7 +167,7 @@ an error, but it’s unrelated to the PR.
 ## API
 
 This package exports no identifiers.
-The default export is `unifiedDiff`.
+The default export is [`unifiedDiff`][api-unified-diff].
 
 ### `unified().use(unifiedDiff)`
 
@@ -184,17 +185,24 @@ nothing.
 
 PRs welcome!
 
+###### Returns
+
+Transform ([`Transformer`][transformer]).
+
 ## Types
 
 This package is fully typed with [TypeScript][].
-There are no additional exported types.
+It exports no additional types.
 
 ## Compatibility
 
-Projects maintained by the unified collective are compatible with all maintained
+Projects maintained by the unified collective are compatible with maintained
 versions of Node.js.
-As of now, that is Node.js 12.20+, 14.14+, 16.0+, and 18.0+.
-Our projects sometimes work with older versions, but this is not guaranteed.
+
+When we cut a new major release, we drop support for unmaintained versions of
+Node.
+This means we try to keep the current release line, `unified-diff@^4`,
+compatible with Node.js 12.
 
 ## Contribute
 
@@ -255,3 +263,7 @@ abide by its terms.
 [author]: https://wooorm.com
 
 [unified]: https://github.com/unifiedjs/unified
+
+[transformer]: https://github.com/unifiedjs/unified?tab=readme-ov-file#transformer
+
+[api-unified-diff]: #unifieduseunifieddiff
