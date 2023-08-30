@@ -264,6 +264,6 @@ abide by its terms.
 
 [unified]: https://github.com/unifiedjs/unified
 
-[transformer]: https://github.com/unifiedjs/unified?tab=readme-ov-file#transformer
+[transformer]: https://github.com/unifiedjs/unified#transformer
 
 [api-unified-diff]: #unifieduseunifieddiff
